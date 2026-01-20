@@ -5,7 +5,7 @@ import IntroScreen from "./src/screens/IntroScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState("intro");
+  const [currentScreen, setCurrentScreen] = useState<'intro' | 'home'>("intro");
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

@@ -1,7 +1,11 @@
 import React, { useEffect } from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 
-const IntroScreen = ({ onFinish }) => {
+interface IntroScreenProps {
+  onFinish: () => void;
+}
+
+const IntroScreen: React.FC<IntroScreenProps> = ({ onFinish }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onFinish();
