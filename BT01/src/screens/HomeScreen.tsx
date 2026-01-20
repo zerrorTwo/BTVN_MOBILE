@@ -8,6 +8,7 @@ const HomeScreen: React.FC = () => {
       <Text style={styles.text}>Name: Lê Quốc Nam</Text>
       <Text style={styles.text}>MSSV: 22110184</Text>
       <Text style={styles.text}>Exercise: BT01</Text>
+      <Text style={styles.text}>Date: 20/01/2026</Text>
     </View>
   );
 };
