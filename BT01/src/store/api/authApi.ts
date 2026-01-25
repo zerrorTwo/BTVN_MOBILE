@@ -7,6 +7,8 @@ import type {
   RegisterRequest,
   ForgetPasswordRequest,
   ResetPasswordRequest,
+  VerifyOTPRequest,
+  ResendOTPRequest,
   User,
 } from "../../types";
 
@@ -75,6 +77,20 @@ export const authApi = createApi({
         body: credentials,
       }),
     }),
+    verifyOTP: builder.mutation<AuthResponse, VerifyOTPRequest>({
+      query: (data) => ({
+        url: "/api/auth/verify-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    resendOTP: builder.mutation<AuthResponse, ResendOTPRequest>({
+      query: (data) => ({
+        url: "/api/auth/resend-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
         url: "/api/auth/login",
@@ -82,7 +98,32 @@ export const authApi = createApi({
         body: credentials,
       }),
     }),
+    forgetPassword: builder.mutation<AuthResponse, ForgetPasswordRequest>({
+      query: (data) => ({
+        url: "/api/auth/forget-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    resetPassword: builder.mutation<AuthResponse, ResetPasswordRequest>({
+      query: (data) => ({
+        url: "/api/auth/reset-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    getCurrentUser: builder.query<AuthResponse, void>({
+      query: () => "/api/auth/me",
+    }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation } = authApi;
+export const {
+  useRegisterMutation,
+  useVerifyOTPMutation,
+  useResendOTPMutation,
+  useLoginMutation,
+  useForgetPasswordMutation,
+  useResetPasswordMutation,
+  useGetCurrentUserQuery,
+} = authApi;

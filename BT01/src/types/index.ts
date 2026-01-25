@@ -2,25 +2,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  isVerified?: boolean;
   createdAt?: string;
-}
-
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  user?: User;
-}
-
-export interface ForgetPasswordResponse {
-  success: boolean;
-  message: string;
-  resetToken?: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
 }
 
 export interface RegisterRequest {
@@ -29,20 +12,43 @@ export interface RegisterRequest {
   password: string;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  resetToken?: string;
+  email?: string;
+  code?: string;
+  user?: User;
+}
+
+export interface VerifyOTPRequest {
+  email: string;
+  otp: string;
+  purpose: "REGISTER" | "RESET_PASSWORD";
+}
+
+export interface ResendOTPRequest {
+  email: string;
+  purpose: "REGISTER" | "RESET_PASSWORD";
+}
+
 export interface ForgetPasswordRequest {
   email: string;
 }
 
-export interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
+export interface ForgetPasswordResponse {
+  success: boolean;
+  message: string;
+  email?: string;
 }
 
-export interface ErrorResponse {
-  success: false;
-  message: string;
-  errors?: Array<{
-    msg: string;
-    param: string;
-  }>;
+export interface ResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
 }

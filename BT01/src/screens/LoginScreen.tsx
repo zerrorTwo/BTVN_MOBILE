@@ -37,16 +37,29 @@ export default function LoginScreen({ navigation }: Props) {
         try {
             const result = await login({ email, password }).unwrap();
 
-            if (result.success && result.user) {
-                // Store credentials in Redux
-                dispatch(setCredentials({ user: result.user }));
+            if (result.success && result.user && result.token) {
+                // Store credentials in Redux and AsyncStorage
+                dispatch(setCredentials({ user: result.user, token: result.token }));
                 // Navigate to Intro
                 navigation.replace('Intro');
             }
         } catch (error: any) {
-            const message = error?.data?.message || 'Login failed. Please try again.';
-            setSnackbarMessage(message);
-            setSnackbarVisible(true);
+            // Check if account is not verified
+            if (error?.data?.code === 'ACCOUNT_NOT_VERIFIED') {
+                setSnackbarMessage('Tài khoản chưa được xác thực. Vui lòng kiểm tra email để lấy mã OTP.');
+                setSnackbarVisible(true);
+                // Navigate to OTP verification
+                setTimeout(() => {
+                    navigation.navigate('OTPVerification', {
+                        email: error.data.email || email,
+                        purpose: 'REGISTER'
+                    });
+                }, 2000);
+            } else {
+                const message = error?.data?.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+                setSnackbarMessage(message);
+                setSnackbarVisible(true);
+            }
         }
     };
 
@@ -102,7 +115,15 @@ export default function LoginScreen({ navigation }: Props) {
                                 disabled={isLoading}
                                 style={styles.button}
                             >
-                                Login
+                                Đăng nhập
+                            </Button>
+
+                            <Button
+                                mode="text"
+                                onPress={() => navigation.navigate('ForgetPassword')}
+                                style={styles.linkButton}
+                            >
+                                Quên mật khẩu?
                             </Button>
 
                             <Button
@@ -110,7 +131,7 @@ export default function LoginScreen({ navigation }: Props) {
                                 onPress={() => navigation.navigate('Register')}
                                 style={styles.button}
                             >
-                                Don't have an account? Register
+                                Chưa có tài khoản? Đăng ký
                             </Button>
                         </Card.Content>
                     </Card>

@@ -45,15 +45,18 @@ export default function RegisterScreen({ navigation }: Props) {
             const result = await register({ name, email, password }).unwrap();
 
             if (result.success) {
-                setSnackbarMessage('Registration successful! Please login.');
+                setSnackbarMessage('Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP.');
                 setSnackbarVisible(true);
-                // Navigate to Login after 2 seconds
+                // Navigate to OTP Verification screen
                 setTimeout(() => {
-                    navigation.replace('Login');
-                }, 2000);
+                    navigation.navigate('OTPVerification', {
+                        email: result.email || email,
+                        purpose: 'REGISTER'
+                    });
+                }, 1500);
             }
         } catch (error: any) {
-            const message = error?.data?.message || 'Registration failed. Please try again.';
+            const message = error?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
             setSnackbarMessage(message);
             setSnackbarVisible(true);
         }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Card, Title, Paragraph, Snackbar, HelperText } from 'react-native-paper';
 import { useForgetPasswordMutation } from '../store/api/authApi';
 import { validateEmail } from '../utils/validation';
@@ -11,7 +11,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ForgetPassword'>;
 export default function ForgetPasswordScreen({ navigation }: Props) {
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState('');
-    const [resetToken, setResetToken] = useState('');
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
 
@@ -29,21 +28,25 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
         try {
             const result = await forgetPassword({ email }).unwrap();
 
-            if (result.success && result.resetToken) {
-                setResetToken(result.resetToken);
-                setSnackbarMessage('Reset token generated! (In production, this would be sent via email)');
-                setSnackbarVisible(true);
+            if (result.success) {
+                Alert.alert(
+                    'Thành công',
+                    'Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra email.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => navigation.navigate('OTPVerification', {
+                                email: result.email || email,
+                                purpose: 'RESET_PASSWORD'
+                            })
+                        }
+                    ]
+                );
             }
         } catch (error: any) {
-            const message = error?.data?.message || 'Failed to generate reset token. Please try again.';
+            const message = error?.data?.message || 'Không thể gửi mã OTP. Vui lòng thử lại.';
             setSnackbarMessage(message);
             setSnackbarVisible(true);
-        }
-    };
-
-    const handleNavigateToReset = () => {
-        if (resetToken) {
-            navigation.navigate('ResetPassword', { token: resetToken });
         }
     };
 
@@ -55,9 +58,9 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Card style={styles.card}>
                     <Card.Content>
-                        <Title style={styles.title}>Forgot Password</Title>
+                        <Title style={styles.title}>Quên mật khẩu</Title>
                         <Paragraph style={styles.subtitle}>
-                            Enter your email to receive a password reset token
+                            Nhập email của bạn để nhận mã OTP đặt lại mật khẩu
                         </Paragraph>
 
                         <TextInput
@@ -84,38 +87,15 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
                             disabled={isLoading}
                             style={styles.button}
                         >
-                            Send Reset Token
+                            Gửi mã OTP
                         </Button>
-
-                        {resetToken && (
-                            <View style={styles.tokenContainer}>
-                                <Paragraph style={styles.tokenLabel}>Reset Token:</Paragraph>
-                                <TextInput
-                                    value={resetToken}
-                                    mode="outlined"
-                                    editable={false}
-                                    multiline
-                                    style={styles.tokenInput}
-                                />
-                                <Paragraph style={styles.tokenNote}>
-                                    Copy this token or click below to reset your password
-                                </Paragraph>
-                                <Button
-                                    mode="contained"
-                                    onPress={handleNavigateToReset}
-                                    style={styles.button}
-                                >
-                                    Reset Password
-                                </Button>
-                            </View>
-                        )}
 
                         <Button
                             mode="outlined"
                             onPress={() => navigation.navigate('Login')}
                             style={styles.button}
                         >
-                            Back to Login
+                            Quay lại đăng nhập
                         </Button>
                     </Card.Content>
                 </Card>
@@ -161,24 +141,5 @@ const styles = StyleSheet.create({
     },
     button: {
         marginTop: 16,
-    },
-    tokenContainer: {
-        marginTop: 24,
-        padding: 16,
-        backgroundColor: '#e8f5e9',
-        borderRadius: 8,
-    },
-    tokenLabel: {
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    tokenInput: {
-        marginBottom: 8,
-        backgroundColor: 'white',
-    },
-    tokenNote: {
-        fontSize: 12,
-        color: '#666',
-        fontStyle: 'italic',
     },
 });

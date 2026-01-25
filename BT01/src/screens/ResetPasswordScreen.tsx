@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Card, Title, Paragraph, Snackbar, HelperText } from 'react-native-paper';
 import { useResetPasswordMutation } from '../store/api/authApi';
 import { validatePassword, validatePasswordMatch } from '../utils/validation';
@@ -9,11 +9,10 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 type Props = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;
 
 export default function ResetPasswordScreen({ navigation, route }: Props) {
-    const [token, setToken] = useState(route.params?.token || '');
+    const { resetToken } = route.params;
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    const [tokenError, setTokenError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
@@ -24,38 +23,33 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
 
     const handleResetPassword = async () => {
         // Validate inputs
-        let hasError = false;
-
-        if (!token) {
-            setTokenError('Reset token is required');
-            hasError = true;
-        } else {
-            setTokenError('');
-        }
-
         const passwordErr = validatePassword(newPassword);
         const confirmPasswordErr = validatePasswordMatch(newPassword, confirmPassword);
 
         setPasswordError(passwordErr || '');
         setConfirmPasswordError(confirmPasswordErr || '');
 
-        if (hasError || passwordErr || confirmPasswordErr) {
+        if (passwordErr || confirmPasswordErr) {
             return;
         }
 
         try {
-            const result = await resetPassword({ token, newPassword }).unwrap();
+            const result = await resetPassword({ resetToken, newPassword }).unwrap();
 
             if (result.success) {
-                setSnackbarMessage('Password reset successful! Please login with your new password.');
-                setSnackbarVisible(true);
-                // Navigate to Login after 2 seconds
-                setTimeout(() => {
-                    navigation.replace('Login');
-                }, 2000);
+                Alert.alert(
+                    'Thành công',
+                    'Mật khẩu đã được đặt lại thành công! Vui lòng đăng nhập với mật khẩu mới.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => navigation.replace('Login')
+                        }
+                    ]
+                );
             }
         } catch (error: any) {
-            const message = error?.data?.message || 'Password reset failed. Please try again.';
+            const message = error?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.';
             setSnackbarMessage(message);
             setSnackbarVisible(true);
         }
@@ -69,29 +63,13 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Card style={styles.card}>
                     <Card.Content>
-                        <Title style={styles.title}>Reset Password</Title>
+                        <Title style={styles.title}>Đặt lại mật khẩu</Title>
                         <Paragraph style={styles.subtitle}>
-                            Enter your reset token and new password
+                            Nhập mật khẩu mới của bạn
                         </Paragraph>
 
                         <TextInput
-                            label="Reset Token"
-                            value={token}
-                            onChangeText={(text) => {
-                                setToken(text);
-                                setTokenError('');
-                            }}
-                            mode="outlined"
-                            multiline
-                            style={styles.input}
-                            error={!!tokenError}
-                        />
-                        <HelperText type="error" visible={!!tokenError}>
-                            {tokenError}
-                        </HelperText>
-
-                        <TextInput
-                            label="New Password"
+                            label="Mật khẩu mới"
                             value={newPassword}
                             onChangeText={(text) => {
                                 setNewPassword(text);
@@ -107,7 +85,7 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
                         </HelperText>
 
                         <TextInput
-                            label="Confirm New Password"
+                            label="Xác nhận mật khẩu mới"
                             value={confirmPassword}
                             onChangeText={(text) => {
                                 setConfirmPassword(text);
@@ -129,7 +107,7 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
                             disabled={isLoading}
                             style={styles.button}
                         >
-                            Reset Password
+                            Đặt lại mật khẩu
                         </Button>
 
                         <Button
@@ -137,7 +115,7 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
                             onPress={() => navigation.navigate('Login')}
                             style={styles.button}
                         >
-                            Back to Login
+                            Quay lại đăng nhập
                         </Button>
                     </Card.Content>
                 </Card>
