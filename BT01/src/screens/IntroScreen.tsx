@@ -1,35 +1,38 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
+import { Button } from "react-native-paper";
+import Layout from "../components/Layout";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../navigation/AppNavigator";
 
-interface IntroScreenProps {
-  onFinish: () => void;
-}
+type Props = NativeStackScreenProps<RootStackParamList, "Intro">;
 
-const IntroScreen: React.FC<IntroScreenProps> = ({ onFinish }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onFinish();
-    }, 10000); // 10 seconds
-
-    return () => clearTimeout(timer);
-  }, [onFinish]);
-
+export default function IntroScreen({ navigation }: Props) {
   return (
-    <View style={styles.container}>
-      <Image
-        source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
-        style={styles.logo}
-      />
-      <Text style={styles.text}>Welcome to BT01</Text>
-      <Text style={styles.subText}>Redirecting in 10 seconds...</Text>
-    </View>
+    <Layout>
+      <View style={styles.container}>
+        <Image
+          source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
+          style={styles.logo}
+        />
+        <Text style={styles.text}>Welcome to BT01</Text>
+        <Text style={styles.subText}>You are logged in!</Text>
+
+        <Button
+          mode="contained"
+          onPress={() => navigation.navigate("Home")}
+          style={styles.button}
+        >
+          Go to Home
+        </Button>
+      </View>
+    </Layout>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -39,13 +42,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   text: {
-    fontSize: 18,
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 10,
   },
   subText: {
-    fontSize: 14,
+    fontSize: 16,
     color: "gray",
+    marginBottom: 30,
+  },
+  button: {
+    minWidth: 200,
   },
 });
-
-export default IntroScreen;
