@@ -16,6 +16,7 @@ import OTPVerificationScreen from '../screens/OTPVerificationScreen';
 import ForgetPasswordScreen from '../screens/ForgetPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
+import AdminHomeScreen from '../screens/AdminHomeScreen';
 
 export type RootStackParamList = {
     Intro: undefined;
@@ -25,13 +26,14 @@ export type RootStackParamList = {
     ForgetPassword: undefined;
     ResetPassword: { resetToken: string };
     Home: undefined;
+    AdminHome: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
     const [isLoading, setIsLoading] = useState(true);
-    const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
 
     // Load user and token from AsyncStorage on app start
@@ -73,19 +75,30 @@ export default function AppNavigator() {
                 }}
             >
                 {isAuthenticated ? (
-                    <>
+                    user?.role === 'ADMIN' ? (
+                        // Admin Stack
                         <Stack.Screen
-                            name="Intro"
-                            component={IntroScreen}
-                            options={{ headerShown: false }}
+                            name="AdminHome"
+                            component={AdminHomeScreen}
+                            options={{ title: 'Admin Dashboard' }}
                         />
-                        <Stack.Screen
-                            name="Home"
-                            component={HomeScreen}
-                            options={{ title: 'Home' }}
-                        />
-                    </>
+                    ) : (
+                        // User Stack
+                        <>
+                            <Stack.Screen
+                                name="Intro"
+                                component={IntroScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="Home"
+                                component={HomeScreen}
+                                options={{ title: 'Home' }}
+                            />
+                        </>
+                    )
                 ) : (
+                    // Auth Stack
                     <>
                         <Stack.Screen
                             name="Login"

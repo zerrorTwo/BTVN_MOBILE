@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput, Button, Card, Title, Paragraph, Snackbar, HelperText } from 'react-native-paper';
-import { useRegisterMutation } from '../store/api/authApi';
+import { useRegisterMutation } from '../services/api/authApi';
 import { validateEmail, validatePassword, validateName, validatePasswordMatch } from '../utils/validation';
 import Layout from '../components/Layout';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';

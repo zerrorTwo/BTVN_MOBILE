@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { TextInput, Button, Card, Title, Paragraph, Snackbar, HelperText } from 'react-native-paper';
-import { useLoginMutation } from '../store/api/authApi';
+import { useLoginMutation } from '../services/api/authApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { validateEmail, validatePassword } from '../utils/validation';
