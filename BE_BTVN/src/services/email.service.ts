@@ -74,6 +74,36 @@ class EmailService {
   }
 
   /**
+   * Send OTP email for profile changes (email or phone)
+   */
+  async sendProfileChangeOTP(
+    email: string,
+    otp: string,
+    name: string,
+    changeType: "email" | "phone",
+    newValue: string,
+  ): Promise<void> {
+    const typeLabel = changeType === "email" ? "email" : "số điện thoại";
+    const subject = `Xác nhận thay đổi ${typeLabel} - Mã OTP của bạn`;
+    const text = `Xin chào ${name},\n\nMã OTP để thay đổi ${typeLabel} thành ${newValue} của bạn là: ${otp}\n\nMã này sẽ hết hạn sau 5 phút.\n\nNếu bạn không yêu cầu thay đổi này, vui lòng bỏ qua email này.`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Xác nhận thay đổi ${typeLabel}</h2>
+        <p>Xin chào <strong>${name}</strong>,</p>
+        <p>Chúng tôi nhận được yêu cầu thay đổi ${typeLabel} thành: <strong>${newValue}</strong></p>
+        <p>Vui lòng sử dụng mã OTP bên dưới để xác nhận:</p>
+        <div style="background-color: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+          <h1 style="color: #2196F3; font-size: 32px; letter-spacing: 5px; margin: 0;">${otp}</h1>
+        </div>
+        <p style="color: #666;">Mã này sẽ hết hạn sau <strong>5 phút</strong>.</p>
+        <p style="color: #999; font-size: 12px;">Nếu bạn không yêu cầu thay đổi này, vui lòng bỏ qua email này.</p>
+      </div>
+    `;
+
+    await this.sendEmail({ to: email, subject, text, html });
+  }
+
+  /**
    * Generic send email method
    */
   private async sendEmail(options: EmailOptions): Promise<void> {
