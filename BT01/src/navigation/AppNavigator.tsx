@@ -17,6 +17,13 @@ import ForgetPasswordScreen from '../screens/ForgetPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import HomeScreen from '../screens/HomeScreen';
 import AdminHomeScreen from '../screens/AdminHomeScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import ChangePhoneScreen from '../screens/ChangePhoneScreen';
+import ChangeEmailScreen from '../screens/ChangeEmailScreen';
+import SearchScreen from '../screens/SearchScreen';
+import ProductDetailScreen from '../screens/ProductDetailScreen';
 
 export type RootStackParamList = {
     Intro: undefined;
@@ -27,6 +34,13 @@ export type RootStackParamList = {
     ResetPassword: { resetToken: string };
     Home: undefined;
     AdminHome: undefined;
+    Profile: undefined;
+    EditProfile: undefined;
+    ChangePassword: undefined;
+    ChangePhone: undefined;
+    ChangeEmail: undefined;
+    Search: undefined;
+    ProductDetail: { productId: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -93,7 +107,42 @@ export default function AppNavigator() {
                             <Stack.Screen
                                 name="Home"
                                 component={HomeScreen}
-                                options={{ title: 'Home' }}
+                                options={{ title: 'Trang chủ' }}
+                            />
+                            <Stack.Screen
+                                name="Profile"
+                                component={ProfileScreen}
+                                options={{ title: 'Hồ sơ' }}
+                            />
+                            <Stack.Screen
+                                name="EditProfile"
+                                component={EditProfileScreen}
+                                options={{ title: 'Chỉnh sửa hồ sơ' }}
+                            />
+                            <Stack.Screen
+                                name="ChangePassword"
+                                component={ChangePasswordScreen}
+                                options={{ title: 'Đổi mật khẩu' }}
+                            />
+                            <Stack.Screen
+                                name="ChangePhone"
+                                component={ChangePhoneScreen}
+                                options={{ title: 'Đổi số điện thoại' }}
+                            />
+                            <Stack.Screen
+                                name="ChangeEmail"
+                                component={ChangeEmailScreen}
+                                options={{ title: 'Đổi email' }}
+                            />
+                            <Stack.Screen
+                                name="Search"
+                                component={SearchScreen}
+                                options={{ title: 'Tìm kiếm' }}
+                            />
+                            <Stack.Screen
+                                name="ProductDetail"
+                                component={ProductDetailScreen}
+                                options={{ title: 'Chi tiết sản phẩm' }}
                             />
                         </>
                     )

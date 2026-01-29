@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, RefreshControl, Image } from 'react-native';
+import { View, ScrollView, RefreshControl, Image, TouchableOpacity } from 'react-native';
 import { Text, Button, Card, Avatar, IconButton, Divider, Surface } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import tw from 'twrnc';
@@ -72,10 +72,10 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   const quickActions = [
-    { icon: 'account-cog', label: 'Profile', bgColor: '#dbeafe', iconColor: '#2563eb' },
-    { icon: 'shield-check', label: 'Security', bgColor: '#d1fae5', iconColor: '#059669' },
-    { icon: 'bell-ring', label: 'Notices', bgColor: '#fef3c7', iconColor: '#d97706' },
-    { icon: 'help-circle', label: 'Support', bgColor: '#ede9fe', iconColor: '#7c3aed' },
+    { icon: 'account-cog', label: 'Profile', bgColor: '#dbeafe', iconColor: '#2563eb', onPress: () => navigation.navigate('Profile') },
+    { icon: 'shield-check', label: 'Security', bgColor: '#d1fae5', iconColor: '#059669', onPress: () => navigation.navigate('ChangePassword') },
+    { icon: 'bell-ring', label: 'Notices', bgColor: '#fef3c7', iconColor: '#d97706', onPress: () => { } },
+    { icon: 'help-circle', label: 'Support', bgColor: '#ede9fe', iconColor: '#7c3aed', onPress: () => { } },
   ];
 
   return (
@@ -104,6 +104,15 @@ export default function HomeScreen({ navigation }: Props) {
               color="#4f46e5"
             />
           </View>
+
+          {/* Search Bar - Navigate to Search Screen */}
+          <TouchableOpacity
+            style={tw`mt-6 bg-white/20 rounded-xl px-4 py-3 flex-row items-center`}
+            onPress={() => navigation.navigate('Search')}
+          >
+            <IconButton icon="magnify" size={20} iconColor="#fff" style={tw`m-0 p-0`} />
+            <Text style={tw`text-white/80 ml-2`}>Tìm kiếm sản phẩm...</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Content Section - overlapping header */}
@@ -156,7 +165,7 @@ export default function HomeScreen({ navigation }: Props) {
                 key={index}
                 style={tw`w-[48%] bg-white rounded-xl mb-3`}
                 elevation={2}
-                onPress={() => { }}
+                onPress={item.onPress}
               >
                 <Card.Content style={tw`items-center py-5`}>
                   <View style={[tw`p-3 rounded-full mb-2`, { backgroundColor: item.bgColor }]}>

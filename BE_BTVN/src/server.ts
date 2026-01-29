@@ -3,6 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connectDatabase } from "./config/database";
 import authRoutes from "./routes/auth.routes";
+import profileRoutes from "./routes/profile.routes";
+import productRoutes from "./routes/product.routes";
+import { Product, Category } from "./models/product.model";
+import seedProducts from "./utils/seeder";
 import { errorHandler } from "./middleware/error.middleware";
 import { requestLogger } from "./middleware/logger.middleware";
 import emailService from "./services/email.service";
@@ -35,6 +39,10 @@ app.get("/", (_req: Request, res: Response) => {
       forgetPassword: "POST /api/auth/forget-password",
       resetPassword: "POST /api/auth/reset-password",
       getCurrentUser: "GET /api/auth/me (protected)",
+      products: "GET /api/products",
+      productDetail: "GET /api/products/:id",
+      categories: "GET /api/products/categories/all",
+      featured: "GET /api/products/featured",
     },
     features: [
       "✅ OTP Email Verification",
@@ -46,6 +54,8 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/products", productRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
@@ -55,6 +65,13 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDatabase();
+
+    // Sync product models (create tables if not exist)
+    await Category.sync();
+    await Product.sync();
+
+    // Seed sample data
+    await seedProducts();
 
     // Verify email service
     await emailService.verifyConnection();

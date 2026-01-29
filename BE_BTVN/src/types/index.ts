@@ -3,10 +3,20 @@ export interface IUser {
   name: string;
   email: string;
   password?: string;
+  phone?: string | null;
+  avatar?: string | null;
   isVerified?: boolean;
+  pendingEmail?: string | null;
+  pendingPhone?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+// Re-export profile DTOs
+export * from "./profile.dto";
+
+// Re-export product DTOs
+export * from "./product.dto";
 
 export interface IRegisterRequest {
   name: string;
@@ -40,7 +50,7 @@ export interface IAuthResponse {
 export interface IOTPRequest {
   email: string;
   otp: string;
-  purpose: "REGISTER" | "RESET_PASSWORD";
+  purpose: "REGISTER" | "RESET_PASSWORD" | "CHANGE_EMAIL" | "CHANGE_PHONE";
 }
 
 export interface IResendOTPRequest {
