@@ -5,6 +5,8 @@ import {
   getProductById,
   getCategories,
   getFeaturedProducts,
+  getBestSellers,
+  getDiscountedProducts,
 } from "../controllers/product.controller";
 
 const router = Router();
@@ -49,6 +51,12 @@ router.get("/", getProductsValidation, getProducts);
 
 // Get featured products (top rated, best sellers, newest)
 router.get("/featured", getFeaturedProducts);
+
+// Get top 10 best selling products
+router.get("/best-sellers", getBestSellers);
+
+// Get top 20 discounted products (sorted by discount %)
+router.get("/discounted", getDiscountedProducts);
 
 // Get product by ID
 router.get("/:id", getProductById);

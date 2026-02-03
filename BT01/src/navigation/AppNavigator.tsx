@@ -39,7 +39,7 @@ export type RootStackParamList = {
     ChangePassword: undefined;
     ChangePhone: undefined;
     ChangeEmail: undefined;
-    Search: undefined;
+    Search: { categoryId?: number; sortBy?: string } | undefined;
     ProductDetail: { productId: number };
 };
 

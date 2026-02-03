@@ -297,3 +297,96 @@ export const getFeaturedProducts = async (
     });
   }
 };
+
+/**
+ * @route   GET /api/products/best-sellers
+ * @desc    Get top 10 best selling products (by sold count)
+ * @access  Public
+ */
+export const getBestSellers = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+): Promise<void> => {
+  try {
+    const limit = Number(req.query.limit) || 10;
+
+    const bestSellers = await Product.findAll({
+      where: { isActive: true },
+      include: [
+        { model: Category, as: "category", attributes: ["id", "name"] },
+      ],
+      order: [["sold", "DESC"]],
+      limit,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Lấy sản phẩm bán chạy thành công",
+      products: bestSellers.map(formatProductListItem),
+    });
+  } catch (error: any) {
+    console.error("Get best sellers error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi lấy sản phẩm bán chạy",
+    });
+  }
+};
+
+/**
+ * @route   GET /api/products/discounted
+ * @desc    Get top 20 products with highest discount percentage
+ * @access  Public
+ */
+export const getDiscountedProducts = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+): Promise<void> => {
+  try {
+    const limit = Number(req.query.limit) || 20;
+
+    // Get products that have originalPrice > price (discounted products)
+    const products = await Product.findAll({
+      where: {
+        isActive: true,
+        originalPrice: { [Op.not]: null },
+      },
+      include: [
+        { model: Category, as: "category", attributes: ["id", "name"] },
+      ],
+    });
+
+    // Calculate discount percentage and filter products with actual discount
+    const discountedProducts = products
+      .map((product) => {
+        const price = Number(product.price);
+        const originalPrice = Number(product.originalPrice);
+        const discountPercent =
+          originalPrice > price
+            ? Math.round(((originalPrice - price) / originalPrice) * 100)
+            : 0;
+
+        return {
+          ...formatProductListItem(product),
+          discountPercent,
+        };
+      })
+      .filter((p) => p.discountPercent > 0) // Only products with actual discount
+      .sort((a, b) => b.discountPercent - a.discountPercent) // Sort by discount DESC
+      .slice(0, limit);
+
+    res.status(200).json({
+      success: true,
+      message: "Lấy sản phẩm giảm giá thành công",
+      products: discountedProducts,
+    });
+  } catch (error: any) {
+    console.error("Get discounted products error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi lấy sản phẩm giảm giá",
+    });
+  }
+};
