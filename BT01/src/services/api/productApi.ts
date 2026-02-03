@@ -18,6 +18,10 @@ export interface ProductListItem {
   categoryName?: string;
 }
 
+export interface DiscountedProduct extends ProductListItem {
+  discountPercent: number;
+}
+
 export interface ProductDetail extends ProductListItem {
   description: string | null;
   images: string[];
@@ -69,6 +73,18 @@ export interface FeaturedProductsResponse {
     bestSellers: ProductListItem[];
     newest: ProductListItem[];
   };
+}
+
+export interface BestSellersResponse {
+  success: boolean;
+  message: string;
+  products: ProductListItem[];
+}
+
+export interface DiscountedProductsResponse {
+  success: boolean;
+  message: string;
+  products: DiscountedProduct[];
 }
 
 export interface ProductQueryParams {
@@ -147,6 +163,21 @@ export const productApi = createApi({
           `/api/products/featured${limit ? `?limit=${limit}` : ""}`,
       },
     ),
+
+    // Get top 10 best selling products
+    getBestSellers: builder.query<BestSellersResponse, number | void>({
+      query: (limit) =>
+        `/api/products/best-sellers${limit ? `?limit=${limit}` : ""}`,
+    }),
+
+    // Get top 20 discounted products
+    getDiscountedProducts: builder.query<
+      DiscountedProductsResponse,
+      number | void
+    >({
+      query: (limit) =>
+        `/api/products/discounted${limit ? `?limit=${limit}` : ""}`,
+    }),
   }),
 });
 
@@ -156,4 +187,6 @@ export const {
   useGetProductByIdQuery,
   useGetCategoriesQuery,
   useGetFeaturedProductsQuery,
+  useGetBestSellersQuery,
+  useGetDiscountedProductsQuery,
 } = productApi;
