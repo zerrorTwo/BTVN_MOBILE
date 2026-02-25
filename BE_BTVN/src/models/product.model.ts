@@ -1,9 +1,6 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import sequelize from "../config/database";
 
-// ============================================================================
-// Category Model
-// ============================================================================
 
 export interface CategoryAttributes {
   id?: number;
@@ -64,9 +61,6 @@ Category.init(
   },
 );
 
-// ============================================================================
-// Product Model
-// ============================================================================
 
 export interface ProductAttributes {
   id?: number;
@@ -107,7 +101,6 @@ export class Product
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Association
   public readonly category?: Category;
 }
 
@@ -184,9 +177,6 @@ Product.init(
   },
 );
 
-// ============================================================================
-// Associations
-// ============================================================================
 
 Product.belongsTo(Category, {
   foreignKey: "categoryId",

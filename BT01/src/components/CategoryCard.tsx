@@ -12,21 +12,25 @@ interface CategoryCardProps {
 const CategoryCard: React.FC<CategoryCardProps> = ({ item, onPress }) => (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
         <Surface
-            style={tw`mx-2 rounded-2xl overflow-hidden bg-white`}
+            style={tw`mx-2 my-2 rounded-2xl overflow-hidden bg-white`}
             elevation={2}
         >
-            <View style={tw`w-20 items-center py-3 px-2`}>
+            <View style={tw`w-24 max-h-24 min-h-24 items-center py-3 px-2`}>
                 <View
-                    style={tw`w-14 h-14 rounded-xl bg-indigo-50 items-center justify-center mb-2 overflow-hidden`}
+                    style={tw`w-14 h-14 max-h-15 rounded-xl bg-orange-50 items-center justify-center mb-2 overflow-hidden`}
                 >
                     {item.image ? (
-                        <Image
-                            source={{ uri: item.image }}
-                            style={tw`w-full h-full`}
-                            resizeMode="cover"
-                        />
+                        item.image.startsWith('http') ? (
+                            <Image
+                                source={{ uri: item.image }}
+                                style={tw`w-full h-full`}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <IconButton icon={item.image} size={28} iconColor="#EE4D2D" style={tw`m-0`} />
+                        )
                     ) : (
-                        <IconButton icon="shape" size={28} iconColor="#6366f1" style={tw`m-0`} />
+                        <IconButton icon="shape" size={28} iconColor="#EE4D2D" style={tw`m-0`} />
                     )}
                 </View>
                 <Text
@@ -35,11 +39,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ item, onPress }) => (
                 >
                     {item.name}
                 </Text>
-                {item.productCount !== undefined && (
-                    <Text style={tw`text-[10px] text-gray-400 mt-0.5`}>
-                        {item.productCount} SP
-                    </Text>
-                )}
+
             </View>
         </Surface>
     </TouchableOpacity>

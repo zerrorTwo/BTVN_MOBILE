@@ -1,56 +1,68 @@
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { Text, Avatar, IconButton } from 'react-native-paper';
+import { Text, Avatar, IconButton, Button } from 'react-native-paper';
 import tw from 'twrnc';
 import { getInitials } from '../utils/formatters';
 
 interface HomeHeaderProps {
     userName: string;
+    isAuthenticated: boolean;
     onNotificationPress?: () => void;
     onProfilePress?: () => void;
     onSearchPress?: () => void;
+    onLoginPress?: () => void;
 }
 
 const HomeHeader: React.FC<HomeHeaderProps> = ({
     userName,
+    isAuthenticated,
     onNotificationPress,
     onProfilePress,
     onSearchPress,
+    onLoginPress,
 }) => (
-    <View style={tw`bg-indigo-600 pt-6 pb-16 px-5`}>
+    <View style={tw`bg-[#EE4D2D] pt-6 pb-12 px-5`}>
         <View style={tw`flex-row justify-between items-center`}>
             <View style={tw`flex-1`}>
-                <Text style={tw`text-indigo-200 text-sm font-medium uppercase tracking-wider`}>
+                <Text style={tw`text-[#FFB8A8] text-sm font-medium uppercase tracking-wider`}>
                     Xin chào 👋
                 </Text>
                 <Text style={tw`text-white text-2xl font-bold mt-1`}>
-                    {userName}
+                    {isAuthenticated ? userName : 'Khách'}
                 </Text>
             </View>
-            <View style={tw`flex-row items-center`}>
+            {isAuthenticated ? (
+                <View style={tw`flex-row items-center`}>
+                    <TouchableOpacity
+                        style={tw`bg-white/20 p-2 rounded-full mr-2`}
+                        onPress={onNotificationPress}
+                    >
+                        <IconButton
+                            icon="bell-outline"
+                            size={22}
+                            iconColor="#fff"
+                            style={tw`m-0`}
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={onProfilePress}>
+                        <Avatar.Text
+                            size={48}
+                            label={getInitials(userName)}
+                            style={tw`bg-white`}
+                            labelStyle={tw`text-[#EE4D2D] font-bold text-lg`}
+                        />
+                    </TouchableOpacity>
+                </View>
+            ) : (
                 <TouchableOpacity
-                    style={tw`bg-white/20 p-2 rounded-full mr-2`}
-                    onPress={onNotificationPress}
+                    style={tw`bg-white px-5 py-2.5 rounded-full`}
+                    onPress={onLoginPress}
                 >
-                    <IconButton
-                        icon="bell-outline"
-                        size={22}
-                        iconColor="#fff"
-                        style={tw`m-0`}
-                    />
+                    <Text style={tw`text-[#EE4D2D] font-bold text-sm`}>Đăng nhập</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={onProfilePress}>
-                    <Avatar.Text
-                        size={48}
-                        label={getInitials(userName)}
-                        style={tw`bg-white`}
-                        labelStyle={tw`text-indigo-600 font-bold text-lg`}
-                    />
-                </TouchableOpacity>
-            </View>
+            )}
         </View>
 
-        {/* Search Bar */}
         <TouchableOpacity
             style={tw`mt-5 bg-white rounded-2xl px-4 py-3.5 flex-row items-center shadow-lg`}
             onPress={onSearchPress}
@@ -69,7 +81,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
             <IconButton
                 icon="microphone-outline"
                 size={20}
-                iconColor="#6366f1"
+                iconColor="#EE4D2D"
                 style={tw`m-0 p-0`}
             />
         </TouchableOpacity>

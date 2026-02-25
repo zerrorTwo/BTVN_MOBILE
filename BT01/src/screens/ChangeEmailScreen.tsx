@@ -106,12 +106,12 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                 keyboardShouldPersistTaps="handled"
             >
                 {/* Current Email Info */}
-                <Card style={tw`bg-blue-50 rounded-xl mb-4`} elevation={1}>
+                <Card style={tw`bg-orange-50 rounded-xl mb-4`} elevation={1}>
                     <Card.Content style={tw`p-4`}>
-                        <Text style={tw`text-blue-800 text-sm`}>
+                        <Text style={tw`text-orange-800 text-sm`}>
                             ✉️ Email hiện tại: {user?.email}
                         </Text>
-                        <Text style={tw`text-blue-600 text-xs mt-1`}>
+                        <Text style={tw`text-orange-600 text-xs mt-1`}>
                             Mã OTP sẽ được gửi đến email mới để xác nhận.
                         </Text>
                     </Card.Content>
@@ -135,7 +135,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                                     autoCorrect={false}
                                     style={tw`bg-white`}
                                     outlineColor="#e5e7eb"
-                                    activeOutlineColor="#6366f1"
+                                    activeOutlineColor="#EE4D2D"
                                     left={<TextInput.Icon icon="email-outline" />}
                                 />
                             </Card.Content>
@@ -147,7 +147,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                             loading={isRequestingOTP}
                             disabled={isRequestingOTP}
                             style={tw`rounded-xl`}
-                            buttonColor="#6366f1"
+                            buttonColor="#EE4D2D"
                             contentStyle={tw`py-2`}
                         >
                             {isRequestingOTP ? 'Đang gửi...' : 'Gửi mã OTP'}
@@ -173,7 +173,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                                     maxLength={6}
                                     style={tw`bg-white text-center text-2xl tracking-widest`}
                                     outlineColor="#e5e7eb"
-                                    activeOutlineColor="#6366f1"
+                                    activeOutlineColor="#EE4D2D"
                                 />
                             </Card.Content>
                         </Card>
@@ -184,7 +184,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                             loading={isChanging}
                             disabled={isChanging}
                             style={tw`rounded-xl mb-3`}
-                            buttonColor="#6366f1"
+                            buttonColor="#EE4D2D"
                             contentStyle={tw`py-2`}
                         >
                             {isChanging ? 'Đang xác nhận...' : 'Xác nhận'}
@@ -196,7 +196,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                                 mode="text"
                                 onPress={handleResendOTP}
                                 disabled={isRequestingOTP}
-                                textColor="#6366f1"
+                                textColor="#EE4D2D"
                                 compact
                             >
                                 Gửi lại

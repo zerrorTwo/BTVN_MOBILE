@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../../store";
+import { API_BASE_URL } from "../../config";
 
 // ============================================================================
 // Types / DTOs
@@ -101,8 +102,6 @@ export interface ProductQueryParams {
 // ============================================================================
 // API Configuration
 // ============================================================================
-
-const API_BASE_URL = "http://10.0.2.2:5000";
 
 const baseQueryWithLogging = fetchBaseQuery({
   baseUrl: API_BASE_URL,

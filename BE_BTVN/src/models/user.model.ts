@@ -8,6 +8,10 @@ export interface UserAttributes {
   password: string;
   phone?: string | null;
   avatar?: string | null;
+  address?: string | null;
+  city?: string | null;
+  district?: string | null;
+  ward?: string | null;
   isVerified?: boolean;
   otp?: string | null;
   otpExpiry?: Date | null;
@@ -29,6 +33,10 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public password!: string;
   public phone!: string | null;
   public avatar!: string | null;
+  public address!: string | null;
+  public city!: string | null;
+  public district!: string | null;
+  public ward!: string | null;
   public isVerified!: boolean;
   public otp!: string | null;
   public otpExpiry!: Date | null;
@@ -77,6 +85,26 @@ User.init(
     },
     avatar: {
       type: DataTypes.TEXT("long"),
+      allowNull: true,
+      defaultValue: null,
+    },
+    address: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null,
+    },
+    city: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: null,
+    },
+    district: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: null,
+    },
+    ward: {
+      type: DataTypes.STRING(100),
       allowNull: true,
       defaultValue: null,
     },

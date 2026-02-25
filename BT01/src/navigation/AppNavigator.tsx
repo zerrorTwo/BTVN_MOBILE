@@ -15,15 +15,15 @@ import RegisterScreen from '../screens/RegisterScreen';
 import OTPVerificationScreen from '../screens/OTPVerificationScreen';
 import ForgetPasswordScreen from '../screens/ForgetPasswordScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
-import HomeScreen from '../screens/HomeScreen';
+import MainTabs from './MainTabs';
 import AdminHomeScreen from '../screens/AdminHomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChangePhoneScreen from '../screens/ChangePhoneScreen';
 import ChangeEmailScreen from '../screens/ChangeEmailScreen';
-import SearchScreen from '../screens/SearchScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
+import { CheckoutScreen } from '../screens/CheckoutScreen';
+import { OrderDetailScreen } from '../screens/OrderDetailScreen';
 
 export type RootStackParamList = {
     Intro: undefined;
@@ -32,7 +32,7 @@ export type RootStackParamList = {
     OTPVerification: { email: string; purpose: 'REGISTER' | 'RESET_PASSWORD' };
     ForgetPassword: undefined;
     ResetPassword: { resetToken: string };
-    Home: undefined;
+    Home: { screen?: string; params?: any } | undefined;
     AdminHome: undefined;
     Profile: undefined;
     EditProfile: undefined;
@@ -41,6 +41,10 @@ export type RootStackParamList = {
     ChangeEmail: undefined;
     Search: { categoryId?: number; sortBy?: string } | undefined;
     ProductDetail: { productId: number };
+    Cart: undefined;
+    Checkout: undefined;
+    Orders: undefined;
+    OrderDetail: { orderId: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -79,103 +83,95 @@ export default function AppNavigator() {
         <NavigationContainer>
             <Stack.Navigator
                 screenOptions={{
-                    headerStyle: {
-                        backgroundColor: '#6200EE',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
+                    headerShown: false,
                 }}
             >
-                {isAuthenticated ? (
-                    user?.role === 'ADMIN' ? (
-                        // Admin Stack
-                        <Stack.Screen
-                            name="AdminHome"
-                            component={AdminHomeScreen}
-                            options={{ title: 'Admin Dashboard' }}
-                        />
-                    ) : (
-                        // User Stack
-                        <>
-                            <Stack.Screen
-                                name="Intro"
-                                component={IntroScreen}
-                                options={{ headerShown: false }}
-                            />
-                            <Stack.Screen
-                                name="Home"
-                                component={HomeScreen}
-                                options={{ title: 'Trang chủ' }}
-                            />
-                            <Stack.Screen
-                                name="Profile"
-                                component={ProfileScreen}
-                                options={{ title: 'Hồ sơ' }}
-                            />
-                            <Stack.Screen
-                                name="EditProfile"
-                                component={EditProfileScreen}
-                                options={{ title: 'Chỉnh sửa hồ sơ' }}
-                            />
-                            <Stack.Screen
-                                name="ChangePassword"
-                                component={ChangePasswordScreen}
-                                options={{ title: 'Đổi mật khẩu' }}
-                            />
-                            <Stack.Screen
-                                name="ChangePhone"
-                                component={ChangePhoneScreen}
-                                options={{ title: 'Đổi số điện thoại' }}
-                            />
-                            <Stack.Screen
-                                name="ChangeEmail"
-                                component={ChangeEmailScreen}
-                                options={{ title: 'Đổi email' }}
-                            />
-                            <Stack.Screen
-                                name="Search"
-                                component={SearchScreen}
-                                options={{ title: 'Tìm kiếm' }}
-                            />
-                            <Stack.Screen
-                                name="ProductDetail"
-                                component={ProductDetailScreen}
-                                options={{ title: 'Chi tiết sản phẩm' }}
-                            />
-                        </>
-                    )
-                ) : (
-                    // Auth Stack
-                    <>
-                        <Stack.Screen
-                            name="Login"
-                            component={LoginScreen}
-                            options={{ title: 'Đăng nhập' }}
-                        />
-                        <Stack.Screen
-                            name="Register"
-                            component={RegisterScreen}
-                            options={{ title: 'Đăng ký' }}
-                        />
-                        <Stack.Screen
-                            name="OTPVerification"
-                            component={OTPVerificationScreen}
-                            options={{ title: 'Xác thực OTP' }}
-                        />
-                        <Stack.Screen
-                            name="ForgetPassword"
-                            component={ForgetPasswordScreen}
-                            options={{ title: 'Quên mật khẩu' }}
-                        />
-                        <Stack.Screen
-                            name="ResetPassword"
-                            component={ResetPasswordScreen}
-                            options={{ title: 'Đặt lại mật khẩu' }}
-                        />
-                    </>
+                {/* Main App - Always Accessible (Guest or Authenticated) */}
+                <Stack.Screen
+                    name="Home"
+                    component={MainTabs}
+                    options={{ headerShown: false }}
+                />
+
+                {/* Auth Screens - Accessible when needed */}
+                <Stack.Screen
+                    name="Login"
+                    component={LoginScreen}
+                    options={{ title: 'Đăng nhập' }}
+                />
+                <Stack.Screen
+                    name="Register"
+                    component={RegisterScreen}
+                    options={{ title: 'Đăng ký' }}
+                />
+                <Stack.Screen
+                    name="OTPVerification"
+                    component={OTPVerificationScreen}
+                    options={{ title: 'Xác thực OTP' }}
+                />
+                <Stack.Screen
+                    name="ForgetPassword"
+                    component={ForgetPasswordScreen}
+                    options={{ title: 'Quên mật khẩu' }}
+                />
+                <Stack.Screen
+                    name="ResetPassword"
+                    component={ResetPasswordScreen}
+                    options={{ title: 'Đặt lại mật khẩu' }}
+                />
+
+                {/* Detail Screens */}
+                <Stack.Screen
+                    name="ProductDetail"
+                    component={ProductDetailScreen}
+                    options={{ title: 'Chi tiết sản phẩm' }}
+                />
+                <Stack.Screen
+                    name="Checkout"
+                    component={CheckoutScreen}
+                    options={{ title: 'Thanh toán' }}
+                />
+                <Stack.Screen
+                    name="OrderDetail"
+                    component={OrderDetailScreen}
+                    options={{ title: 'Chi tiết đơn hàng' }}
+                />
+                <Stack.Screen
+                    name="EditProfile"
+                    component={EditProfileScreen}
+                    options={{ title: 'Chỉnh sửa hồ sơ' }}
+                />
+                <Stack.Screen
+                    name="ChangePassword"
+                    component={ChangePasswordScreen}
+                    options={{ title: 'Đổi mật khẩu' }}
+                />
+                <Stack.Screen
+                    name="ChangePhone"
+                    component={ChangePhoneScreen}
+                    options={{ title: 'Đổi số điện thoại' }}
+                />
+                <Stack.Screen
+                    name="ChangeEmail"
+                    component={ChangeEmailScreen}
+                    options={{ title: 'Đổi email' }}
+                />
+
+                {/* Admin */}
+                {user?.role === 'ADMIN' && (
+                    <Stack.Screen
+                        name="AdminHome"
+                        component={AdminHomeScreen}
+                        options={{ title: 'Admin Dashboard' }}
+                    />
                 )}
+
+                {/* Intro - Optional */}
+                <Stack.Screen
+                    name="Intro"
+                    component={IntroScreen}
+                    options={{ headerShown: false }}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );

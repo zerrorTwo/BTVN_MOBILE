@@ -1,5 +1,3 @@
-// Profile DTOs - Data Transfer Objects for Profile API
-// These interfaces define the structure for request/response data
 
 /**
  * Response for profile data

@@ -23,10 +23,10 @@ const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
 
     return (
         <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
-            <Surface style={tw`mx-2 rounded-2xl overflow-hidden bg-white w-40`} elevation={3}>
+            <Surface style={tw`mx-2 my-2 rounded-2xl max-h-64 min-h-64 overflow-hidden bg-white w-40`} elevation={3}>
                 {/* Image */}
-                <View style={tw`relative`}>
-                    <View style={tw`h-32 bg-gray-100`}>
+                <View style={tw`relative `}>
+                    <View style={tw`h-32  bg-gray-100`}>
                         {item.image ? (
                             <Image
                                 source={{ uri: item.image }}
@@ -63,8 +63,8 @@ const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
                 </View>
 
                 {/* Content */}
-                <View style={tw`p-3`}>
-                    <Text style={tw`text-sm font-semibold text-gray-800`} numberOfLines={2}>
+                <View style={tw`p-3 relative flex-1`}>
+                    <Text style={tw`text-sm font-semibold text-gray-800 pr-12`} numberOfLines={2}>
                         {item.name}
                     </Text>
 
@@ -79,9 +79,10 @@ const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
                         )}
                     </View>
 
-                    <View style={tw`flex-row items-center mt-2`}>
+                    {/* Sold info - Fixed at bottom-right */}
+                    <View style={tw`absolute bottom-0 right-5 flex-row items-center`}>
                         <IconButton icon="fire" size={12} iconColor="#f97316" style={tw`m-0 p-0`} />
-                        <Text style={tw`text-[10px] text-gray-500 ml-1`}>
+                        <Text style={tw`text-[10px] text-gray-500`}>
                             {formatSold(item.sold)}
                         </Text>
                     </View>

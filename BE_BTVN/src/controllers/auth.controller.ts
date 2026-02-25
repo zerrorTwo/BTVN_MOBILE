@@ -12,10 +12,8 @@ import {
 } from "../utils/otp";
 import emailService from "../services/email.service";
 
-// Register new user with OTP
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate request
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({
@@ -28,7 +26,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const { name, email, password } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       res.status(400).json({
@@ -38,14 +35,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate OTP
     const otp = generateOTP();
     const otpExpiry = getOTPExpiry();
 
-    // Create new user (not verified yet)
     const user = await User.create({
       name,
       email,
@@ -57,7 +51,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       role: req.body.role || "USER",
     });
 
-    // Send OTP email
     await emailService.sendRegistrationOTP(email, otp, name);
 
     const response: IAuthResponse = {
@@ -76,7 +69,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Verify OTP (for registration or password reset)
 export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
   try {
     const errors = validationResult(req);
@@ -91,7 +83,6 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
 
     const { email, otp, purpose } = req.body;
 
-    // Validate OTP format
     if (!isValidOTPFormat(otp)) {
       res.status(400).json({
         success: false,
@@ -100,7 +91,6 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Find user
     const user = await User.findOne({ where: { email } });
     if (!user) {
       res.status(404).json({
@@ -110,7 +100,6 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if OTP matches and purpose is correct
     if (user.otp !== otp || user.otpPurpose !== purpose) {
       res.status(400).json({
         success: false,
@@ -119,7 +108,6 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if OTP has expired
     if (!user.otpExpiry || isOTPExpired(user.otpExpiry)) {
       res.status(400).json({
         success: false,
@@ -128,16 +116,13 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // OTP is valid
     if (purpose === "REGISTER") {
-      // Activate account
       user.isVerified = true;
       user.otp = null;
       user.otpExpiry = null;
       user.otpPurpose = null;
       await user.save();
 
-      // Generate JWT token
       const token = generateToken(user.id);
 
       const response: IAuthResponse = {
@@ -155,10 +140,8 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
 
       res.status(200).json(response);
     } else if (purpose === "RESET_PASSWORD") {
-      // Generate temporary reset token
       const resetToken = generateToken(user.id, "15m");
 
-      // Clear OTP (will be cleared again after password reset)
       user.otp = null;
       user.otpExpiry = null;
       await user.save();
@@ -180,7 +163,6 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Resend OTP
 export const resendOTP = async (req: Request, res: Response): Promise<void> => {
   try {
     const errors = validationResult(req);
@@ -195,7 +177,6 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
 
     const { email, purpose } = req.body;
 
-    // Find user
     const user = await User.findOne({ where: { email } });
     if (!user) {
       res.status(404).json({
@@ -205,7 +186,6 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if user is already verified (for registration purpose)
     if (purpose === "REGISTER" && user.isVerified) {
       res.status(400).json({
         success: false,
@@ -214,7 +194,6 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Generate new OTP
     const otp = generateOTP();
     const otpExpiry = getOTPExpiry();
 
@@ -223,7 +202,6 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
     user.otpPurpose = purpose;
     await user.save();
 
-    // Send OTP email
     if (purpose === "REGISTER") {
       await emailService.sendRegistrationOTP(email, otp, user.name);
     } else {
@@ -245,10 +223,8 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Login user
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate request
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({
@@ -261,7 +237,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const { email, password } = req.body;
 
-    // Find user by email
     const user = await User.findOne({ where: { email } });
     if (!user) {
       res.status(401).json({
@@ -271,7 +246,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check password with bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       res.status(401).json({
@@ -281,7 +255,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check if account is verified
     if (!user.isVerified) {
       res.status(401).json({
         success: false,
@@ -293,7 +266,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Generate JWT token
     const token = generateToken(user.id);
 
     const response: IAuthResponse = {
@@ -319,7 +291,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// Forget password - send OTP
 export const forgetPassword = async (
   req: Request,
   res: Response,
@@ -337,10 +308,8 @@ export const forgetPassword = async (
 
     const { email } = req.body;
 
-    // Find user
     const user = await User.findOne({ where: { email } });
 
-    // Don't reveal if email exists or not (security best practice)
     if (!user) {
       res.status(200).json({
         success: true,
@@ -350,7 +319,6 @@ export const forgetPassword = async (
       return;
     }
 
-    // Generate OTP
     const otp = generateOTP();
     const otpExpiry = getOTPExpiry();
 
@@ -359,7 +327,6 @@ export const forgetPassword = async (
     user.otpPurpose = "RESET_PASSWORD";
     await user.save();
 
-    // Send OTP email
     await emailService.sendPasswordResetOTP(email, otp, user.name);
 
     const response: IAuthResponse = {
@@ -378,7 +345,6 @@ export const forgetPassword = async (
   }
 };
 
-// Reset password with token
 export const resetPassword = async (
   req: Request,
   res: Response,
@@ -396,7 +362,6 @@ export const resetPassword = async (
 
     const { newPassword } = req.body;
 
-    // Verify reset token (this will be set by auth middleware)
     const userId = (req as any).userId;
     if (!userId) {
       res.status(401).json({
@@ -406,7 +371,6 @@ export const resetPassword = async (
       return;
     }
 
-    // Find user
     const user = await User.findByPk(userId);
     if (!user) {
       res.status(404).json({
@@ -416,10 +380,8 @@ export const resetPassword = async (
       return;
     }
 
-    // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update password and clear OTP fields
     user.password = hashedPassword;
     user.otp = null;
     user.otpExpiry = null;
@@ -442,7 +404,6 @@ export const resetPassword = async (
   }
 };
 
-// Get current user (protected route)
 export const getCurrentUser = async (
   req: Request,
   res: Response,

@@ -5,27 +5,22 @@ import { connectDatabase } from "./config/database";
 import authRoutes from "./routes/auth.routes";
 import profileRoutes from "./routes/profile.routes";
 import productRoutes from "./routes/product.routes";
-import { Product, Category } from "./models/product.model";
+import cartRoutes from "./routes/cart.routes";
+import orderRoutes from "./routes/order.routes";
+import { Product, Category, Cart, CartItem, Order, OrderItem } from "./models";
 import seedProducts from "./utils/seeder";
 import { errorHandler } from "./middleware/error.middleware";
-import { requestLogger } from "./middleware/logger.middleware";
 import emailService from "./services/email.service";
 
-// Load environment variables
 dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logger middleware
-app.use(requestLogger);
-
-// Routes
 app.get("/", (_req: Request, res: Response) => {
   res.json({
     success: true,
@@ -43,12 +38,23 @@ app.get("/", (_req: Request, res: Response) => {
       productDetail: "GET /api/products/:id",
       categories: "GET /api/products/categories/all",
       featured: "GET /api/products/featured",
+      cart: "GET /api/cart (protected)",
+      addToCart: "POST /api/cart (protected)",
+      updateCartItem: "PUT /api/cart/:itemId (protected)",
+      removeCartItem: "DELETE /api/cart/:itemId (protected)",
+      checkout: "POST /api/orders/checkout (protected)",
+      orders: "GET /api/orders (protected)",
+      orderDetail: "GET /api/orders/:id (protected)",
+      cancelOrder: "PUT /api/orders/:id/cancel (protected)",
     },
     features: [
       "✅ OTP Email Verification",
       "✅ JWT Authentication",
       "✅ Password Hashing (bcrypt)",
       "✅ Secure Password Reset",
+      "✅ Shopping Cart Management",
+      "✅ Order & Checkout System",
+      "✅ Order Tracking & Cancellation",
     ],
   });
 });
@@ -56,27 +62,26 @@ app.get("/", (_req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
-// Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Start server
 const startServer = async () => {
   try {
-    // Connect to database
     await connectDatabase();
 
-    // Sync product models (create tables if not exist)
     await Category.sync();
     await Product.sync();
+    await Cart.sync();
+    await CartItem.sync();
+    await Order.sync();
+    await OrderItem.sync();
 
-    // Seed sample data
     await seedProducts();
 
-    // Verify email service
     await emailService.verifyConnection();
 
-    // Get local IP address for display
     const os = require("os");
     const networkInterfaces = os.networkInterfaces();
     let localIP = "localhost";
@@ -94,7 +99,6 @@ const startServer = async () => {
       if (localIP !== "localhost") break;
     }
 
-    // Start listening on all network interfaces
     app.listen(Number(PORT), "0.0.0.0", () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`Local: http://localhost:${PORT}`);
