@@ -11,7 +11,6 @@ class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    // Create transporter with Gmail SMTP
     this.transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -108,31 +107,15 @@ class EmailService {
    */
   private async sendEmail(options: EmailOptions): Promise<void> {
     try {
-      // If email credentials are not configured, log to console instead
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-        console.log("\n========================================");
-        console.log("📧 EMAIL SERVICE (DEVELOPMENT MODE)");
-        console.log("========================================");
-        console.log(`To: ${options.to}`);
-        console.log(`Subject: ${options.subject}`);
-        console.log(`Content:\n${options.text}`);
-        console.log("========================================\n");
-        return;
-      }
-
-      // Send actual email
-      const info = await this.transporter.sendMail({
+      await this.transporter.sendMail({
         from: `"${process.env.EMAIL_FROM_NAME || "BE_BTVN"}" <${process.env.EMAIL_USER}>`,
         to: options.to,
         subject: options.subject,
         text: options.text,
         html: options.html,
       });
-
-      console.log("✅ Email sent successfully:", info.messageId);
     } catch (error: any) {
-      console.error("❌ Error sending email:", error.message);
-      // In development, don't throw error - just log it
+      console.log(error);
       if (process.env.NODE_ENV === "production") {
         throw new Error("Failed to send email");
       }
@@ -161,5 +144,4 @@ class EmailService {
   }
 }
 
-// Export singleton instance
 export default new EmailService();

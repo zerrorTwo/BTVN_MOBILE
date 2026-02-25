@@ -12,11 +12,15 @@ export interface IUser {
   updatedAt?: Date;
 }
 
-// Re-export profile DTOs
 export * from "./profile.dto";
 
-// Re-export product DTOs
 export * from "./product.dto";
+
+export * from "./cart.dto";
+
+export * from "./order.dto";
+
+export { OrderStatus, PaymentMethod } from "../models/order.model";
 
 export interface IRegisterRequest {
   name: string;

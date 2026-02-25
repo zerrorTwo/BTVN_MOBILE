@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Card, Title, Paragraph, Snackbar, HelperText } from 'react-native-paper';
-import { useForgetPasswordMutation } from '../store/api/authApi';
+import { useForgetPasswordMutation } from '../services/api/authApi';
 import { validateEmail } from '../utils/validation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';

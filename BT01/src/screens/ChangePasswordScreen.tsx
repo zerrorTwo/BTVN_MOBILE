@@ -75,9 +75,9 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                 keyboardShouldPersistTaps="handled"
             >
                 {/* Info Card */}
-                <Card style={tw`bg-blue-50 rounded-xl mb-4`} elevation={1}>
+                <Card style={tw`bg-orange-50 rounded-xl mb-4`} elevation={1}>
                     <Card.Content style={tw`p-4`}>
-                        <Text style={tw`text-blue-800 text-sm`}>
+                        <Text style={tw`text-orange-800 text-sm`}>
                             🔒 Mật khẩu mới phải có ít nhất 6 ký tự. Sau khi đổi mật khẩu thành công,
                             bạn sẽ cần sử dụng mật khẩu mới để đăng nhập.
                         </Text>
@@ -103,7 +103,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                             }
                             style={tw`bg-white mb-4`}
                             outlineColor="#e5e7eb"
-                            activeOutlineColor="#6366f1"
+                            activeOutlineColor="#EE4D2D"
                         />
 
                         {/* New Password */}
@@ -122,7 +122,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                             }
                             style={tw`bg-white mb-4`}
                             outlineColor="#e5e7eb"
-                            activeOutlineColor="#6366f1"
+                            activeOutlineColor="#EE4D2D"
                         />
 
                         {/* Confirm Password */}
@@ -141,7 +141,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                             }
                             style={tw`bg-white`}
                             outlineColor="#e5e7eb"
-                            activeOutlineColor="#6366f1"
+                            activeOutlineColor="#EE4D2D"
                         />
                     </Card.Content>
                 </Card>
@@ -153,7 +153,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                     loading={isLoading}
                     disabled={isLoading}
                     style={tw`rounded-xl`}
-                    buttonColor="#6366f1"
+                    buttonColor="#EE4D2D"
                     contentStyle={tw`py-2`}
                 >
                     {isLoading ? 'Đang xử lý...' : 'Đổi mật khẩu'}

@@ -16,7 +16,6 @@ import {
 
 const router = Router();
 
-// Validation rules
 const registerValidation = [
   body("name").trim().notEmpty().withMessage("Name is required"),
   body("email").isEmail().withMessage("Please provide a valid email"),
@@ -56,7 +55,6 @@ const resetPasswordValidation = [
     .withMessage("Password must be at least 6 characters long"),
 ];
 
-// Public routes
 router.post("/register", registerValidation, register);
 router.post("/verify-otp", verifyOTPValidation, verifyOTP);
 router.post("/resend-otp", resendOTPValidation, resendOTP);
@@ -69,7 +67,6 @@ router.post(
   resetPassword,
 );
 
-// Protected routes
 router.get("/me", authMiddleware, getCurrentUser);
 
 export default router;

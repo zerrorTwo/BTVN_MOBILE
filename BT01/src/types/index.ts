@@ -6,6 +6,10 @@ export interface User {
   avatar?: string | null;
   isVerified?: boolean;
   role?: "USER" | "ADMIN";
+  address?: string | null;
+  city?: string | null;
+  district?: string | null;
+  ward?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

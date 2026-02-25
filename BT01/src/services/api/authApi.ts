@@ -1,20 +1,14 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "..";
+import { API_BASE_URL } from "../../config";
 import type {
   AuthResponse,
-  ForgetPasswordResponse,
+  ForgetPasswordRequest,
   LoginRequest,
   RegisterRequest,
-  ForgetPasswordRequest,
+  ResendOTPRequest,
   ResetPasswordRequest,
   VerifyOTPRequest,
-  ResendOTPRequest,
-  User,
 } from "../../types";
-
-// Use 10.0.2.2 for Android emulator, localhost for iOS/web
-// Change to your computer's IP if testing on physical device (e.g., 192.168.1.68)
-const API_BASE_URL = "http://10.0.2.2:5000";
 
 // Custom baseQuery with logging
 const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {

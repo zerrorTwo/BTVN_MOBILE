@@ -1,43 +1,69 @@
-import React from 'react';
-import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Text, Avatar, Card, List, Divider, Button, ActivityIndicator } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { Text, Avatar, Card, List, Divider, Button } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import tw from 'twrnc';
 import { logout } from '../store/authSlice';
 import Layout from '../components/Layout';
 import type { RootState } from '../store';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/AppNavigator';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
-
-export default function ProfileScreen({ navigation }: Props) {
+export default function ProfileScreen({ navigation }: any) {
     const { user } = useSelector((state: RootState) => state.auth);
     const dispatch = useDispatch();
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     const handleLogout = () => {
-        Alert.alert(
-            'Đăng xuất',
-            'Bạn có chắc chắn muốn đăng xuất?',
-            [
-                { text: 'Hủy', style: 'cancel' },
-                {
-                    text: 'Đăng xuất',
-                    style: 'destructive',
-                    onPress: () => {
-                        dispatch(logout());
-                        navigation.replace('Login');
+        if (Platform.OS === 'web') {
+            if (showLogoutConfirm) {
+                dispatch(logout());
+                setShowLogoutConfirm(false);
+            } else {
+                setShowLogoutConfirm(true);
+            }
+        } else {
+            const { Alert } = require('react-native');
+            Alert.alert(
+                'Đăng xuất',
+                'Bạn có chắc chắn muốn đăng xuất?',
+                [
+                    { text: 'Hủy', style: 'cancel' },
+                    {
+                        text: 'Đăng xuất',
+                        style: 'destructive',
+                        onPress: () => {
+                            dispatch(logout());
+                        },
                     },
-                },
-            ]
-        );
+                ]
+            );
+        }
     };
 
     if (!user) {
         return (
             <Layout>
-                <View style={tw`flex-1 justify-center items-center`}>
-                    <ActivityIndicator size="large" color="#6366f1" />
+                <View style={tw`flex-1 justify-center items-center bg-gray-100 px-6`}>
+                    <Card style={tw`bg-white rounded-2xl w-full max-w-sm`} elevation={4}>
+                        <Card.Content style={tw`items-center py-8 px-6`}>
+                            <List.Icon icon="account-lock" color="#EE4D2D" style={tw`mb-2`} />
+                            <Text style={tw`text-xl font-bold text-gray-800 mb-2 text-center`}>
+                                Yêu cầu đăng nhập
+                            </Text>
+                            <Text style={tw`text-gray-500 text-center mb-6`}>
+                                Bạn cần đăng nhập để xem thông tin cá nhân
+                            </Text>
+                            <Button
+                                mode="contained"
+                                onPress={() => navigation.navigate('Login')}
+                                style={tw`rounded-xl w-full`}
+                                buttonColor="#EE4D2D"
+                                contentStyle={tw`py-1`}
+                                icon="login"
+                            >
+                                Đăng nhập
+                            </Button>
+                        </Card.Content>
+                    </Card>
                 </View>
             </Layout>
         );
@@ -83,7 +109,7 @@ export default function ProfileScreen({ navigation }: Props) {
         <Layout>
             <ScrollView style={tw`flex-1 bg-gray-100`} contentContainerStyle={tw`pb-8`}>
                 {/* Profile Header */}
-                <View style={tw`bg-indigo-600 pt-8 pb-16 px-6 items-center`}>
+                <View style={tw`bg-[#EE4D2D] pt-8 pb-16 px-6 items-center`}>
                     <TouchableOpacity
                         style={tw`mb-4`}
                         onPress={() => navigation.navigate('EditProfile')}
@@ -99,16 +125,16 @@ export default function ProfileScreen({ navigation }: Props) {
                                 size={100}
                                 label={getInitials(user.name)}
                                 style={tw`bg-white`}
-                                labelStyle={tw`text-indigo-600 font-bold text-3xl`}
+                                labelStyle={tw`text-[#EE4D2D] font-bold text-3xl`}
                             />
                         )}
                         <View style={tw`absolute bottom-0 right-0 bg-white rounded-full p-1`}>
-                            <List.Icon icon="camera" color="#6366f1" style={tw`m-0`} />
+                            <List.Icon icon="camera" color="#EE4D2D" style={tw`m-0`} />
                         </View>
                     </TouchableOpacity>
 
                     <Text style={tw`text-white text-2xl font-bold mb-1`}>{user.name}</Text>
-                    <Text style={tw`text-indigo-200 text-base`}>{user.email}</Text>
+                    <Text style={tw`text-[#FFB8A8] text-base`}>{user.email}</Text>
 
                     {user.isVerified && (
                         <View style={tw`flex-row items-center mt-2 bg-green-500/20 px-3 py-1 rounded-full`}>
@@ -161,7 +187,7 @@ export default function ProfileScreen({ navigation }: Props) {
                                             <List.Icon
                                                 {...props}
                                                 icon={item.icon}
-                                                color="#6366f1"
+                                                color="#EE4D2D"
                                             />
                                         )}
                                         right={(props) => <List.Icon {...props} icon="chevron-right" />}
@@ -177,16 +203,44 @@ export default function ProfileScreen({ navigation }: Props) {
                     </Card>
 
                     {/* Logout Button */}
-                    <Button
-                        mode="outlined"
-                        onPress={handleLogout}
-                        style={tw`rounded-xl border-2 border-red-200 bg-white`}
-                        textColor="#dc2626"
-                        icon="logout"
-                        contentStyle={tw`py-2`}
-                    >
-                        Đăng xuất
-                    </Button>
+                    {showLogoutConfirm ? (
+                        <Card style={tw`bg-red-50 rounded-xl mb-2`}>
+                            <Card.Content style={tw`py-3`}>
+                                <Text style={tw`text-red-600 font-semibold text-center mb-3`}>
+                                    Bạn có chắc chắn muốn đăng xuất?
+                                </Text>
+                                <View style={tw`flex-row gap-3`}>
+                                    <Button
+                                        mode="outlined"
+                                        onPress={() => setShowLogoutConfirm(false)}
+                                        style={tw`flex-1 rounded-xl border-gray-300`}
+                                        textColor="#6b7280"
+                                    >
+                                        Hủy
+                                    </Button>
+                                    <Button
+                                        mode="contained"
+                                        onPress={handleLogout}
+                                        style={tw`flex-1 rounded-xl`}
+                                        buttonColor="#dc2626"
+                                    >
+                                        Đăng xuất
+                                    </Button>
+                                </View>
+                            </Card.Content>
+                        </Card>
+                    ) : (
+                        <Button
+                            mode="outlined"
+                            onPress={handleLogout}
+                            style={tw`rounded-xl border-2 border-red-200 bg-white`}
+                            textColor="#dc2626"
+                            icon="logout"
+                            contentStyle={tw`py-2`}
+                        >
+                            Đăng xuất
+                        </Button>
+                    )}
 
                     <Text style={tw`text-center text-gray-400 text-xs mt-4`}>
                         Phiên bản 1.0.0

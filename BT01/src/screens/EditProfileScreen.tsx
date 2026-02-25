@@ -160,7 +160,7 @@ export default function EditProfileScreen({ navigation }: Props) {
                         >
                             {isPickingImage ? (
                                 <View style={tw`w-32 h-32 rounded-full bg-gray-200 items-center justify-center`}>
-                                    <ActivityIndicator size="large" color="#6366f1" />
+                                    <ActivityIndicator size="large" color="#EE4D2D" />
                                 </View>
                             ) : avatar ? (
                                 <Avatar.Image
@@ -172,11 +172,11 @@ export default function EditProfileScreen({ navigation }: Props) {
                                 <Avatar.Text
                                     size={128}
                                     label={getInitials(name || 'U')}
-                                    style={tw`bg-indigo-100`}
-                                    labelStyle={tw`text-indigo-600 font-bold text-4xl`}
+                                    style={tw`bg-orange-100`}
+                                    labelStyle={tw`text-[#EE4D2D] font-bold text-4xl`}
                                 />
                             )}
-                            <View style={tw`absolute bottom-0 right-0 bg-indigo-600 rounded-full p-2`}>
+                            <View style={tw`absolute bottom-0 right-0 bg-[#EE4D2D] rounded-full p-2`}>
                                 <Text style={tw`text-white text-xs`}>📷</Text>
                             </View>
                         </TouchableOpacity>
@@ -197,7 +197,7 @@ export default function EditProfileScreen({ navigation }: Props) {
                             placeholder="Nhập họ và tên"
                             style={tw`bg-white`}
                             outlineColor="#e5e7eb"
-                            activeOutlineColor="#6366f1"
+                            activeOutlineColor="#EE4D2D"
                         />
                     </Card.Content>
                 </Card>
@@ -227,7 +227,7 @@ export default function EditProfileScreen({ navigation }: Props) {
                     loading={isLoading}
                     disabled={isLoading}
                     style={tw`rounded-xl`}
-                    buttonColor="#6366f1"
+                    buttonColor="#EE4D2D"
                     contentStyle={tw`py-2`}
                 >
                     {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}

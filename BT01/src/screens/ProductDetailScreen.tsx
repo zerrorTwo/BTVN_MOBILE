@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Image, TouchableOpacity, FlatList, Dimensions } from 'react-native';
-import { Text, Button, Chip, Divider, ActivityIndicator, IconButton } from 'react-native-paper';
+import { View, ScrollView, Image, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
+import { Text, Button, Chip, Divider, ActivityIndicator, IconButton, Snackbar } from 'react-native-paper';
 import tw from 'twrnc';
+import { useSelector } from 'react-redux';
 import { useGetProductByIdQuery } from '../services/api/productApi';
+import { useAddToCartMutation } from '../services/api/cartApi';
 import Layout from '../components/Layout';
+import type { RootState } from '../store';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
@@ -15,8 +18,12 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
     const { productId } = route.params;
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [snackMessage, setSnackMessage] = useState('');
 
+    const { user } = useSelector((state: RootState) => state.auth);
     const { data, isLoading, error } = useGetProductByIdQuery(productId);
+    const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
     const product = data?.product;
 
     const formatPrice = (price: number) => {
@@ -27,16 +34,44 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
     };
 
     const discount = product?.originalPrice
-        ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+        ? Math.round(((Number(product.originalPrice) - Number(product.price)) / Number(product.originalPrice)) * 100)
         : 0;
 
     const images = product?.images?.length ? product.images : [product?.image || 'https://via.placeholder.com/400?text=No+Image'];
+
+    const handleAddToCart = async () => {
+        if (!user) {
+            navigation.navigate('Login');
+            return;
+        }
+
+        try {
+            await addToCart({ productId, quantity }).unwrap();
+            setSnackMessage(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
+        } catch (error: any) {
+            setSnackMessage(error.data?.message || 'Không thể thêm vào giỏ hàng');
+        }
+    };
+
+    const handleBuyNow = async () => {
+        if (!user) {
+            navigation.navigate('Login');
+            return;
+        }
+
+        try {
+            await addToCart({ productId, quantity }).unwrap();
+            navigation.navigate('Checkout');
+        } catch (error: any) {
+            Alert.alert('Lỗi', error.data?.message || 'Không thể thêm vào giỏ hàng');
+        }
+    };
 
     if (isLoading) {
         return (
             <Layout>
                 <View style={tw`flex-1 items-center justify-center bg-gray-100`}>
-                    <ActivityIndicator size="large" color="#6366f1" />
+                    <ActivityIndicator size="large" color="#EE4D2D" />
                     <Text style={tw`text-gray-500 mt-4`}>Đang tải sản phẩm...</Text>
                 </View>
             </Layout>
@@ -56,7 +91,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                         mode="contained"
                         onPress={() => navigation.goBack()}
                         style={tw`mt-6 rounded-xl`}
-                        buttonColor="#6366f1"
+                        buttonColor="#EE4D2D"
                     >
                         Quay lại
                     </Button>
@@ -95,7 +130,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                             {images.map((_, index) => (
                                 <View
                                     key={index}
-                                    style={tw`w-2 h-2 rounded-full mx-1 ${index === currentImageIndex ? 'bg-indigo-600' : 'bg-gray-300'
+                                    style={tw`w-2 h-2 rounded-full mx-1 ${index === currentImageIndex ? 'bg-[#EE4D2D]' : 'bg-gray-300'
                                         }`}
                                 />
                             ))}
@@ -115,11 +150,11 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     {/* Price */}
                     <View style={tw`flex-row items-center mb-2`}>
                         <Text style={tw`text-red-600 font-bold text-2xl`}>
-                            {formatPrice(product.price)}
+                            {formatPrice(Number(product.price))}
                         </Text>
                         {product.originalPrice && product.originalPrice > product.price && (
                             <Text style={tw`text-gray-400 text-base line-through ml-3`}>
-                                {formatPrice(product.originalPrice)}
+                                {formatPrice(Number(product.originalPrice))}
                             </Text>
                         )}
                     </View>
@@ -132,20 +167,20 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     {/* Rating & Sold */}
                     <View style={tw`flex-row items-center`}>
                         <View style={tw`flex-row items-center bg-yellow-50 px-2 py-1 rounded-lg`}>
-                            <Text style={tw`text-yellow-600 font-bold`}>★ {product.rating.toFixed(1)}</Text>
-                            <Text style={tw`text-gray-500 text-sm ml-1`}>({product.ratingCount})</Text>
+                            <Text style={tw`text-yellow-600 font-bold`}>★ {Number(product.rating || 0).toFixed(1)}</Text>
+                            <Text style={tw`text-gray-500 text-sm ml-1`}>({product.ratingCount || 0})</Text>
                         </View>
                         <Divider style={tw`h-4 w-px bg-gray-300 mx-3`} />
-                        <Text style={tw`text-gray-500`}>Đã bán {product.sold}</Text>
+                        <Text style={tw`text-gray-500`}>Đã bán {product.sold || 0}</Text>
                         <Divider style={tw`h-4 w-px bg-gray-300 mx-3`} />
-                        <Text style={tw`text-gray-500`}>Kho: {product.stock}</Text>
+                        <Text style={tw`text-gray-500`}>Kho: {product.stock || 0}</Text>
                     </View>
 
                     {/* Category */}
                     {product.categoryName && (
                         <View style={tw`flex-row items-center mt-3`}>
                             <Text style={tw`text-gray-500`}>Danh mục: </Text>
-                            <Chip compact style={tw`bg-indigo-50`} textStyle={tw`text-indigo-600 text-xs`}>
+                            <Chip compact style={tw`bg-orange-50`} textStyle={tw`text-[#EE4D2D] text-xs`}>
                                 {product.categoryName}
                             </Chip>
                         </View>
@@ -189,27 +224,56 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
             </ScrollView>
 
             {/* Bottom Action Bar */}
-            <View style={tw`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex-row`}>
-                <TouchableOpacity
-                    style={tw`w-12 h-12 border border-gray-300 rounded-xl items-center justify-center mr-3`}
-                >
-                    <IconButton icon="heart-outline" size={24} iconColor="#6366f1" style={tw`m-0`} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={tw`w-12 h-12 border border-gray-300 rounded-xl items-center justify-center mr-3`}
-                >
-                    <IconButton icon="cart-outline" size={24} iconColor="#6366f1" style={tw`m-0`} />
-                </TouchableOpacity>
+            <View style={tw`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex-row items-center`}>
+                <IconButton
+                    icon={isFavorite ? "heart" : "heart-outline"}
+                    size={24}
+                    iconColor="#EE4D2D"
+                    style={tw`w-12 h-12 border border-gray-300 rounded-xl m-0 mr-3`}
+                    onPress={() => {
+                        if (!user) {
+                            setSnackMessage('Vui lòng đăng nhập để thêm sản phẩm yêu thích');
+                            navigation.navigate('Login');
+                            return;
+                        }
+                        setIsFavorite(!isFavorite);
+                        setSnackMessage(
+                            isFavorite
+                                ? `Đã bỏ ${product.name} khỏi yêu thích`
+                                : `Đã thêm ${product.name} vào yêu thích`
+                        );
+                    }}
+                />
+                <IconButton
+                    icon="cart-plus"
+                    size={24}
+                    iconColor="#EE4D2D"
+                    style={tw`w-12 h-12 border border-[#EE4D2D] rounded-xl m-0 mr-3`}
+                    onPress={handleAddToCart}
+                    disabled={isAddingToCart}
+                />
                 <Button
                     mode="contained"
-                    onPress={() => { }}
+                    onPress={handleBuyNow}
+                    loading={isAddingToCart}
+                    disabled={isAddingToCart}
                     style={tw`flex-1 rounded-xl`}
-                    buttonColor="#6366f1"
+                    buttonColor="#EE4D2D"
                     contentStyle={tw`py-2`}
                 >
-                    Mua ngay • {formatPrice(product.price * quantity)}
+                    Mua ngay • {formatPrice(Number(product.price) * quantity)}
                 </Button>
             </View>
+
+            {/* Snackbar Toast */}
+            <Snackbar
+                visible={!!snackMessage}
+                onDismiss={() => setSnackMessage('')}
+                duration={2500}
+                style={tw`mb-20 bg-gray-800`}
+            >
+                {snackMessage}
+            </Snackbar>
         </Layout>
     );
 }

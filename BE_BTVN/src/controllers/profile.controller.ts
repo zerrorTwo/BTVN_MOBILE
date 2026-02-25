@@ -117,13 +117,11 @@ export const updateProfile = async (
 
     const { name, avatar }: UpdateProfileRequest = req.body;
 
-    // Update fields if provided
     if (name !== undefined && name.trim() !== "") {
       user.name = name.trim();
     }
 
     if (avatar !== undefined) {
-      // Validate avatar size (max 5MB for Base64)
       if (avatar && avatar.length > 5 * 1024 * 1024) {
         res.status(400).json({
           success: false,
@@ -178,7 +176,6 @@ export const changePassword = async (
       confirmPassword,
     }: ChangePasswordRequest = req.body;
 
-    // Verify current password
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password,
@@ -191,7 +188,6 @@ export const changePassword = async (
       return;
     }
 
-    // Check if new password matches confirm password
     if (newPassword !== confirmPassword) {
       res.status(400).json({
         success: false,
@@ -200,7 +196,6 @@ export const changePassword = async (
       return;
     }
 
-    // Check if new password is different from current
     if (currentPassword === newPassword) {
       res.status(400).json({
         success: false,
@@ -209,7 +204,6 @@ export const changePassword = async (
       return;
     }
 
-    // Hash and save new password
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
@@ -250,7 +244,6 @@ export const requestPhoneChangeOTP = async (
 
     const { newPhone }: RequestPhoneOTPRequest = req.body;
 
-    // Check if phone is already used by another user
     const existingUser = await User.findOne({
       where: { phone: newPhone },
     });
@@ -262,7 +255,6 @@ export const requestPhoneChangeOTP = async (
       return;
     }
 
-    // Generate and save OTP
     const otp = generateOTP();
     user.otp = otp;
     user.otpExpiry = getOTPExpiry();
@@ -270,7 +262,6 @@ export const requestPhoneChangeOTP = async (
     user.pendingPhone = newPhone;
     await user.save();
 
-    // Send OTP via email (since we don't have SMS service)
     await emailService.sendProfileChangeOTP(
       user.email,
       otp,
@@ -316,7 +307,6 @@ export const changePhone = async (
 
     const { newPhone, otp }: ChangePhoneRequest = req.body;
 
-    // Verify OTP purpose and pending phone
     if (user.otpPurpose !== "CHANGE_PHONE" || user.pendingPhone !== newPhone) {
       res.status(400).json({
         success: false,
@@ -325,7 +315,6 @@ export const changePhone = async (
       return;
     }
 
-    // Verify OTP
     if (user.otp !== otp) {
       res.status(400).json({
         success: false,
@@ -334,7 +323,6 @@ export const changePhone = async (
       return;
     }
 
-    // Check OTP expiry
     if (!user.otpExpiry || isOTPExpired(user.otpExpiry)) {
       res.status(400).json({
         success: false,
@@ -343,7 +331,6 @@ export const changePhone = async (
       return;
     }
 
-    // Update phone number
     user.phone = newPhone;
     user.otp = null;
     user.otpExpiry = null;
@@ -389,7 +376,6 @@ export const requestEmailChangeOTP = async (
 
     const { newEmail }: RequestEmailOTPRequest = req.body;
 
-    // Check if email is already used
     const existingUser = await User.findOne({
       where: { email: newEmail },
     });
@@ -401,7 +387,6 @@ export const requestEmailChangeOTP = async (
       return;
     }
 
-    // Generate and save OTP
     const otp = generateOTP();
     user.otp = otp;
     user.otpExpiry = getOTPExpiry();
@@ -409,7 +394,6 @@ export const requestEmailChangeOTP = async (
     user.pendingEmail = newEmail;
     await user.save();
 
-    // Send OTP to NEW email address
     await emailService.sendProfileChangeOTP(
       newEmail,
       otp,
@@ -455,7 +439,6 @@ export const changeEmail = async (
 
     const { newEmail, otp }: ChangeEmailRequest = req.body;
 
-    // Verify OTP purpose and pending email
     if (user.otpPurpose !== "CHANGE_EMAIL" || user.pendingEmail !== newEmail) {
       res.status(400).json({
         success: false,
@@ -464,7 +447,6 @@ export const changeEmail = async (
       return;
     }
 
-    // Verify OTP
     if (user.otp !== otp) {
       res.status(400).json({
         success: false,
@@ -473,7 +455,6 @@ export const changeEmail = async (
       return;
     }
 
-    // Check OTP expiry
     if (!user.otpExpiry || isOTPExpired(user.otpExpiry)) {
       res.status(400).json({
         success: false,
@@ -482,7 +463,6 @@ export const changeEmail = async (
       return;
     }
 
-    // Update email
     user.email = newEmail;
     user.otp = null;
     user.otpExpiry = null;

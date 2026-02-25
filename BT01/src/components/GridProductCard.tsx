@@ -6,7 +6,7 @@ import type { DiscountedProduct } from '../services/api/productApi';
 import { formatPrice, formatSold } from '../utils/formatters';
 
 const { width: screenWidth } = Dimensions.get('window');
-const productCardWidth = (screenWidth - 48) / 2;
+const productCardWidth = (screenWidth - 32) / 2; // 32 = padding left (16) + padding right (16)
 
 interface GridProductCardProps {
     item: DiscountedProduct;
@@ -19,7 +19,7 @@ const GridProductCard: React.FC<GridProductCardProps> = ({ item, onPress }) => (
         activeOpacity={0.85}
         style={{ width: productCardWidth }}
     >
-        <Surface style={tw`m-1.5 rounded-2xl overflow-hidden bg-white`} elevation={3}>
+        <Surface style={tw`my-1.5 rounded-2xl overflow-hidden bg-white`} elevation={3}>
             {/* Image */}
             <View style={tw`relative`}>
                 <View style={tw`h-36 bg-gray-100`}>

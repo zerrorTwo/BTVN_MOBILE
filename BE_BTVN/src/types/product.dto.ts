@@ -1,4 +1,3 @@
-// Product DTOs - Data Transfer Objects for Product API
 
 /**
  * Product item for list display

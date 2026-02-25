@@ -13,9 +13,6 @@ import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
-// ============================================================================
-// Validation Rules
-// ============================================================================
 
 const updateProfileValidation = [
   body("name")
@@ -71,17 +68,11 @@ const changeEmailValidation = [
     .withMessage("Mã OTP phải có 6 chữ số"),
 ];
 
-// ============================================================================
-// Routes - All routes require authentication
-// ============================================================================
 
-// Get current user's profile
 router.get("/", authMiddleware, getProfile);
 
-// Update basic profile info (name, avatar)
 router.put("/", authMiddleware, updateProfileValidation, updateProfile);
 
-// Change password
 router.put(
   "/password",
   authMiddleware,
@@ -89,7 +80,6 @@ router.put(
   changePassword,
 );
 
-// Request OTP for phone change
 router.post(
   "/phone/otp",
   authMiddleware,
@@ -97,10 +87,8 @@ router.post(
   requestPhoneChangeOTP,
 );
 
-// Change phone with OTP verification
 router.put("/phone", authMiddleware, changePhoneValidation, changePhone);
 
-// Request OTP for email change
 router.post(
   "/email/otp",
   authMiddleware,
@@ -108,7 +96,6 @@ router.post(
   requestEmailChangeOTP,
 );
 
-// Change email with OTP verification
 router.put("/email", authMiddleware, changeEmailValidation, changeEmail);
 
 export default router;

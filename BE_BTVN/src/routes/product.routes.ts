@@ -11,9 +11,6 @@ import {
 
 const router = Router();
 
-// ============================================================================
-// Validation Rules
-// ============================================================================
 
 const getProductsValidation = [
   query("page")
@@ -42,30 +39,18 @@ const getProductsValidation = [
     .withMessage("Thứ tự: asc hoặc desc"),
 ];
 
-// ============================================================================
-// Public Routes
-// ============================================================================
 
-// Get all products with search, filter, pagination
 router.get("/", getProductsValidation, getProducts);
 
-// Get featured products (top rated, best sellers, newest)
 router.get("/featured", getFeaturedProducts);
 
-// Get top 10 best selling products
 router.get("/best-sellers", getBestSellers);
 
-// Get top 20 discounted products (sorted by discount %)
 router.get("/discounted", getDiscountedProducts);
 
-// Get product by ID
 router.get("/:id", getProductById);
 
-// ============================================================================
-// Category Routes
-// ============================================================================
 
-// Get all categories
 router.get("/categories/all", getCategories);
 
 export default router;

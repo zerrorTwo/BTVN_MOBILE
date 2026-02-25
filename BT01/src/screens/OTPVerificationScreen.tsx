@@ -10,7 +10,9 @@ import {
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
-import { useVerifyOTPMutation, useResendOTPMutation } from "../store/api/authApi";
+import { useVerifyOTPMutation, useResendOTPMutation } from "../services/api/authApi";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../store/authSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = NativeStackScreenProps<RootStackParamList, "OTPVerification">;
@@ -23,6 +25,7 @@ export default function OTPVerificationScreen({ route, navigation }: Props) {
 
     const [verifyOTP, { isLoading: isVerifying }] = useVerifyOTPMutation();
     const [resendOTP, { isLoading: isResending }] = useResendOTPMutation();
+    const dispatch = useDispatch();
 
     // Countdown timer for resend OTP
     useEffect(() => {
@@ -45,20 +48,14 @@ export default function OTPVerificationScreen({ route, navigation }: Props) {
 
             if (result.success) {
                 if (purpose === "REGISTER") {
-                    // Save token for registration
-                    if (result.token) {
+                    // Dispatch credentials and navigate to Home directly
+                    if (result.user && result.token) {
+                        dispatch(setCredentials({ user: result.user, token: result.token }));
+                    } else if (result.token) {
                         await AsyncStorage.setItem("token", result.token);
                     }
-                    Alert.alert(
-                        "Thành công",
-                        "Tài khoản đã được xác thực thành công!",
-                        [
-                            {
-                                text: "OK",
-                                onPress: () => navigation.replace("Login"),
-                            },
-                        ]
-                    );
+                    // Navigate immediately — Alert.alert doesn't work on web
+                    navigation.reset({ index: 0, routes: [{ name: "Home" }] });
                 } else if (purpose === "RESET_PASSWORD") {
                     // Navigate to reset password screen with reset token
                     Alert.alert(

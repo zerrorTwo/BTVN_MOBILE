@@ -39,9 +39,6 @@ const formatProductDetail = (product: Product): ProductDetail => ({
   updatedAt: product.updatedAt.toISOString(),
 });
 
-// ============================================================================
-// Product Controllers
-// ============================================================================
 
 /**
  * @route   GET /api/products
@@ -65,10 +62,8 @@ export const getProducts = async (
       sortOrder = "desc",
     }: ProductQueryParams = req.query;
 
-    // Build where clause
     const where: any = { isActive: true };
 
-    // Search by name or description
     if (search) {
       where[Op.or] = [
         { name: { [Op.like]: `%${search}%` } },
@@ -76,12 +71,10 @@ export const getProducts = async (
       ];
     }
 
-    // Filter by category
     if (categoryId) {
       where.categoryId = categoryId;
     }
 
-    // Filter by price range
     if (minPrice !== undefined || maxPrice !== undefined) {
       where.price = {};
       if (minPrice !== undefined) {
@@ -92,16 +85,13 @@ export const getProducts = async (
       }
     }
 
-    // Validate sortBy
     const allowedSortFields = ["price", "rating", "sold", "createdAt"];
     const sortField = allowedSortFields.includes(sortBy as string)
       ? sortBy
       : "createdAt";
 
-    // Calculate pagination
     const offset = (Number(page) - 1) * Number(limit);
 
-    // Query products
     const { count, rows: products } = await Product.findAndCountAll({
       where,
       include: [
@@ -205,7 +195,6 @@ export const getCategories = async (
       order: [["name", "ASC"]],
     });
 
-    // Get product count for each category
     const categoriesWithCount = await Promise.all(
       categories.map(async (category) => {
         const productCount = await Product.count({
@@ -250,7 +239,6 @@ export const getFeaturedProducts = async (
   try {
     const limit = Number(req.query.limit) || 10;
 
-    // Get top rated products
     const topRated = await Product.findAll({
       where: { isActive: true },
       include: [
@@ -260,7 +248,6 @@ export const getFeaturedProducts = async (
       limit,
     });
 
-    // Get best sellers
     const bestSellers = await Product.findAll({
       where: { isActive: true },
       include: [
@@ -270,7 +257,6 @@ export const getFeaturedProducts = async (
       limit,
     });
 
-    // Get newest products
     const newest = await Product.findAll({
       where: { isActive: true },
       include: [
@@ -347,7 +333,6 @@ export const getDiscountedProducts = async (
   try {
     const limit = Number(req.query.limit) || 20;
 
-    // Get products that have originalPrice > price (discounted products)
     const products = await Product.findAll({
       where: {
         isActive: true,
@@ -358,7 +343,6 @@ export const getDiscountedProducts = async (
       ],
     });
 
-    // Calculate discount percentage and filter products with actual discount
     const discountedProducts = products
       .map((product) => {
         const price = Number(product.price);

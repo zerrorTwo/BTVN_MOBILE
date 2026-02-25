@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../../store";
+import { API_BASE_URL } from "../../config";
 
 // ============================================================================
 // Types / DTOs
@@ -61,9 +62,6 @@ export interface ChangeEmailRequest {
 // ============================================================================
 // API Configuration
 // ============================================================================
-
-// Use 10.0.2.2 for Android emulator, localhost for iOS/web
-const API_BASE_URL = "http://10.0.2.2:5000";
 
 // Custom baseQuery with auth token
 const baseQueryWithAuth = fetchBaseQuery({
