@@ -50,8 +50,13 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
             }
         } catch (error: any) {
             const message = error?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.';
-            setSnackbarMessage(message);
-            setSnackbarVisible(true);
+            // Nếu lỗi liên quan đến mật khẩu trùng cũ, hiển thị dưới ô mật khẩu mới
+            if (message.includes('trùng') || message.toLowerCase().includes('same') || message.toLowerCase().includes('old password')) {
+                setPasswordError(message);
+            } else {
+                setSnackbarMessage(message);
+                setSnackbarVisible(true);
+            }
         }
     };
 

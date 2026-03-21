@@ -16,21 +16,10 @@ const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
   const endpoint = typeof args === "string" ? args : args.url;
   const fullURL = `${API_BASE_URL}${endpoint}`;
 
-  console.log("\n" + "=".repeat(80));
-  console.log(`📤 API REQUEST [${timestamp}]`);
-  console.log("=".repeat(80));
-  console.log(`Full URL: ${fullURL}`);
-  console.log(`Base URL: ${API_BASE_URL}`);
-  console.log(`Endpoint: ${endpoint}`);
-  console.log(
-    `Method: ${typeof args === "string" ? "GET" : args.method || "GET"}`,
-  );
-
   if (typeof args === "object" && args.body) {
     const sanitizedBody = { ...args.body };
     if (sanitizedBody.password) sanitizedBody.password = "***HIDDEN***";
     if (sanitizedBody.newPassword) sanitizedBody.newPassword = "***HIDDEN***";
-    console.log(`Body:`, JSON.stringify(sanitizedBody, null, 2));
   }
 
   const startTime = Date.now();
@@ -41,21 +30,15 @@ const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
   );
   const duration = Date.now() - startTime;
 
-  console.log("\n" + "-".repeat(80));
-  console.log(`📥 API RESPONSE`);
-  console.log("-".repeat(80));
-  console.log(`Status: ${result.meta?.response?.status || "N/A"}`);
-  console.log(`Duration: ${duration}ms`);
+  // if (result.data) {
+  //   console.log(`Response:`, JSON.stringify(result.data, null, 2));
+  // }
 
-  if (result.data) {
-    console.log(`Response:`, JSON.stringify(result.data, null, 2));
-  }
+  // if (result.error) {
+  //   console.log(`❌ Error:`, JSON.stringify(result.error, null, 2));
+  // }
 
-  if (result.error) {
-    console.log(`❌ Error:`, JSON.stringify(result.error, null, 2));
-  }
-
-  console.log("=".repeat(80) + "\n");
+  // console.log("=".repeat(80) + "\n");
 
   return result;
 };
