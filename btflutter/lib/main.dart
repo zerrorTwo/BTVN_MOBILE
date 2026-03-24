@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,7 +40,7 @@ class _IntroScreenState extends State<IntroScreen> {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const ManagerLoginScreen(),
+              const LoginScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
@@ -99,7 +100,7 @@ class _IntroScreenState extends State<IntroScreen> {
             const CircularProgressIndicator(),
             const SizedBox(height: 20),
             const Text(
-              'Đang chuyển đến trang đăng nhập Role Manager (10s)...',
+              'Đang chuyển đến trang đăng nhập (10s)...',
               style: TextStyle(color: Colors.grey),
             ),
           ],
