@@ -3,31 +3,25 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const sequelize = new Sequelize({
-  database: process.env.DB_NAME || "be_btvn",
-  username: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  host: process.env.DB_HOST || "localhost",
-  port: parseInt(process.env.DB_PORT || "3306"),
+const DB_HOST = process.env.DB_HOST || "localhost";
+const DB_PORT = Number(process.env.DB_PORT) || 3306;
+const DB_NAME = process.env.DB_NAME || "be_btvn";
+const DB_USER = process.env.DB_USER || "root";
+const DB_PASSWORD = process.env.DB_PASSWORD || "";
+
+const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+  host: DB_HOST,
+  port: DB_PORT,
   dialect: "mysql",
   logging: false,
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
-  },
 });
 
 export const connectDatabase = async (): Promise<void> => {
   try {
     await sequelize.authenticate();
     console.log("Database connection established successfully.");
-
-    await sequelize.sync();
-    console.log("Database models synchronized.");
   } catch (error) {
-    console.error("Unable to connect to the database:", error);
+    console.error("Unable to connect to database:", error);
     process.exit(1);
   }
 };

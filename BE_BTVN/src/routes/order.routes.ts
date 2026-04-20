@@ -44,6 +44,37 @@ router.post(
   ],
   checkout,
 );
+router.post(
+  "/",
+  authenticate,
+  [
+    body("paymentMethod")
+      .notEmpty()
+      .withMessage("Payment method is required")
+      .isIn(Object.values(PaymentMethod))
+      .withMessage("Invalid payment method"),
+    body("shippingAddress")
+      .notEmpty()
+      .withMessage("Shipping address is required")
+      .isLength({ max: 500 })
+      .withMessage("Shipping address must not exceed 500 characters"),
+    body("receiverName")
+      .notEmpty()
+      .withMessage("Receiver name is required")
+      .isLength({ max: 100 })
+      .withMessage("Receiver name must not exceed 100 characters"),
+    body("receiverPhone")
+      .notEmpty()
+      .withMessage("Receiver phone is required")
+      .matches(/^(0|\+84)[0-9]{9,10}$/)
+      .withMessage("Invalid Vietnamese phone number format"),
+    body("note")
+      .optional()
+      .isLength({ max: 500 })
+      .withMessage("Note must not exceed 500 characters"),
+  ],
+  checkout,
+);
 
 router.get("/", authenticate, getOrders);
 
@@ -70,6 +101,19 @@ router.put(
 
 router.put(
   "/:id/request-cancel",
+  authenticate,
+  [
+    param("id").isInt({ min: 1 }).withMessage("Invalid order ID"),
+    body("cancellationReason")
+      .notEmpty()
+      .withMessage("Cancellation reason is required")
+      .isLength({ max: 500 })
+      .withMessage("Cancellation reason must not exceed 500 characters"),
+  ],
+  requestCancelOrder,
+);
+router.post(
+  "/:id/return",
   authenticate,
   [
     param("id").isInt({ min: 1 }).withMessage("Invalid order ID"),

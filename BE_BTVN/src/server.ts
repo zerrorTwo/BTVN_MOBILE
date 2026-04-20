@@ -26,26 +26,29 @@ app.get("/", (_req: Request, res: Response) => {
     success: true,
     message: "Welcome to BE_BTVN API - OTP Authentication System",
     version: "2.0.0",
+    baseUrl: "/api/v1",
     endpoints: {
-      register: "POST /api/auth/register",
-      verifyOTP: "POST /api/auth/verify-otp",
-      resendOTP: "POST /api/auth/resend-otp",
-      login: "POST /api/auth/login",
-      forgetPassword: "POST /api/auth/forget-password",
-      resetPassword: "POST /api/auth/reset-password",
-      getCurrentUser: "GET /api/auth/me (protected)",
-      products: "GET /api/products",
-      productDetail: "GET /api/products/:id",
-      categories: "GET /api/products/categories/all",
-      featured: "GET /api/products/featured",
-      cart: "GET /api/cart (protected)",
-      addToCart: "POST /api/cart (protected)",
-      updateCartItem: "PUT /api/cart/:itemId (protected)",
-      removeCartItem: "DELETE /api/cart/:itemId (protected)",
-      checkout: "POST /api/orders/checkout (protected)",
-      orders: "GET /api/orders (protected)",
-      orderDetail: "GET /api/orders/:id (protected)",
-      cancelOrder: "PUT /api/orders/:id/cancel (protected)",
+      register: "POST /api/v1/auth/register",
+      verifyOTP: "POST /api/v1/auth/verify-otp",
+      resendOTP: "POST /api/v1/auth/resend-otp",
+      login: "POST /api/v1/auth/login",
+      refresh: "POST /api/v1/auth/refresh",
+      logout: "POST /api/v1/auth/logout",
+      forgetPassword: "POST /api/v1/auth/forget-password",
+      resetPassword: "POST /api/v1/auth/reset-password",
+      getCurrentUser: "GET /api/v1/auth/me (protected)",
+      products: "GET /api/v1/products",
+      productDetail: "GET /api/v1/products/:id",
+      categories: "GET /api/v1/products/categories/all",
+      featured: "GET /api/v1/products/featured",
+      cart: "GET /api/v1/cart (protected)",
+      addToCart: "POST /api/v1/cart/add (protected)",
+      updateCartItem: "PUT /api/v1/cart/item/:itemId (protected)",
+      removeCartItem: "DELETE /api/v1/cart/item/:itemId (protected)",
+      checkout: "POST /api/v1/orders (protected)",
+      orders: "GET /api/v1/orders (protected)",
+      orderDetail: "GET /api/v1/orders/:id (protected)",
+      cancelOrder: "PUT /api/v1/orders/:id/cancel (protected)",
     },
     features: [
       "✅ OTP Email Verification",
@@ -59,6 +62,13 @@ app.get("/", (_req: Request, res: Response) => {
   });
 });
 
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/profile", profileRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/orders", orderRoutes);
+
+// Backward compatible routes for existing clients
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/products", productRoutes);
