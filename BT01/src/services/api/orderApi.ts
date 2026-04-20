@@ -28,7 +28,7 @@ export const orderApi = createApi({
   endpoints: (builder) => ({
     checkout: builder.mutation<CheckoutResponse, CheckoutRequest>({
       query: (body) => ({
-        url: "/api/orders/checkout",
+        url: "/api/v1/orders",
         method: "POST",
         body,
       }),
@@ -40,12 +40,12 @@ export const orderApi = createApi({
       { page?: number; limit?: number }
     >({
       query: ({ page = 1, limit = 10 }) =>
-        `/api/orders?page=${page}&limit=${limit}`,
+        `/api/v1/orders?page=${page}&limit=${limit}`,
       providesTags: ["Orders"],
     }),
 
     getOrderById: builder.query<OrderDetailResponse, number>({
-      query: (id) => `/api/orders/${id}`,
+      query: (id) => `/api/v1/orders/${id}`,
       providesTags: (result, error, id) => [{ type: "OrderDetail", id }],
     }),
 
@@ -54,7 +54,7 @@ export const orderApi = createApi({
       { id: number; data: CancelOrderRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/api/orders/${id}/cancel`,
+        url: `/api/v1/orders/${id}/cancel`,
         method: "PUT",
         body: data,
       }),
@@ -69,7 +69,7 @@ export const orderApi = createApi({
       { id: number; data: CancelOrderRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/api/orders/${id}/request-cancel`,
+        url: `/api/v1/orders/${id}/request-cancel`,
         method: "PUT",
         body: data,
       }),

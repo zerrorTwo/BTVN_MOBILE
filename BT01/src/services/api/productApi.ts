@@ -139,19 +139,19 @@ export const productApi = createApi({
         if (params.sortBy) searchParams.set("sortBy", params.sortBy);
         if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
 
-        return `/api/products?${searchParams.toString()}`;
+        return `/api/v1/products?${searchParams.toString()}`;
       },
       providesTags: ["Products"],
     }),
 
     // Get product detail by ID
     getProductById: builder.query<ProductDetailResponse, number>({
-      query: (id) => `/api/products/${id}`,
+      query: (id) => `/api/v1/products/${id}`,
     }),
 
     // Get all categories
     getCategories: builder.query<CategoryListResponse, void>({
-      query: () => "/api/products/categories/all",
+      query: () => "/api/v1/products/categories/all",
       providesTags: ["Categories"],
     }),
 
@@ -159,14 +159,14 @@ export const productApi = createApi({
     getFeaturedProducts: builder.query<FeaturedProductsResponse, number | void>(
       {
         query: (limit) =>
-          `/api/products/featured${limit ? `?limit=${limit}` : ""}`,
+          `/api/v1/products/featured${limit ? `?limit=${limit}` : ""}`,
       },
     ),
 
     // Get top 10 best selling products
     getBestSellers: builder.query<BestSellersResponse, number | void>({
       query: (limit) =>
-        `/api/products/best-sellers${limit ? `?limit=${limit}` : ""}`,
+        `/api/v1/products/best-sellers${limit ? `?limit=${limit}` : ""}`,
     }),
 
     // Get top 20 discounted products
@@ -175,7 +175,7 @@ export const productApi = createApi({
       number | void
     >({
       query: (limit) =>
-        `/api/products/discounted${limit ? `?limit=${limit}` : ""}`,
+        `/api/v1/products/discounted${limit ? `?limit=${limit}` : ""}`,
     }),
   }),
 });

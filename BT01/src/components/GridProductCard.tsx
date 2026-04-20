@@ -1,12 +1,9 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Image, TouchableOpacity } from 'react-native';
 import { Text, IconButton, Surface } from 'react-native-paper';
 import tw from 'twrnc';
 import type { DiscountedProduct } from '../services/api/productApi';
 import { formatPrice, formatSold } from '../utils/formatters';
-
-const { width: screenWidth } = Dimensions.get('window');
-const productCardWidth = (screenWidth - 32) / 2; // 32 = padding left (16) + padding right (16)
 
 interface GridProductCardProps {
     item: DiscountedProduct;
@@ -17,7 +14,7 @@ const GridProductCard: React.FC<GridProductCardProps> = ({ item, onPress }) => (
     <TouchableOpacity
         onPress={onPress}
         activeOpacity={0.85}
-        style={{ width: productCardWidth }}
+        style={tw`w-[48%]`}
     >
         <Surface style={tw`my-1.5 rounded-2xl overflow-hidden bg-white`} elevation={3}>
             {/* Image */}

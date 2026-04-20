@@ -118,14 +118,14 @@ export const profileApi = createApi({
   endpoints: (builder) => ({
     // Get current user profile
     getProfile: builder.query<ProfileResponse, void>({
-      query: () => "/api/profile",
+      query: () => "/api/v1/profile",
       providesTags: ["Profile"],
     }),
 
     // Update profile (name, avatar)
     updateProfile: builder.mutation<ProfileResponse, UpdateProfileRequest>({
       query: (data) => ({
-        url: "/api/profile",
+        url: "/api/v1/profile",
         method: "PUT",
         body: data,
       }),
@@ -135,7 +135,7 @@ export const profileApi = createApi({
     // Change password
     changePassword: builder.mutation<ApiResponse, ChangePasswordRequest>({
       query: (data) => ({
-        url: "/api/profile/password",
+        url: "/api/v1/profile/password",
         method: "PUT",
         body: data,
       }),
@@ -144,7 +144,7 @@ export const profileApi = createApi({
     // Request OTP for phone change
     requestPhoneOTP: builder.mutation<ApiResponse, RequestPhoneOTPRequest>({
       query: (data) => ({
-        url: "/api/profile/phone/otp",
+        url: "/api/v1/profile/phone/otp",
         method: "POST",
         body: data,
       }),
@@ -153,7 +153,7 @@ export const profileApi = createApi({
     // Change phone with OTP
     changePhone: builder.mutation<ProfileResponse, ChangePhoneRequest>({
       query: (data) => ({
-        url: "/api/profile/phone",
+        url: "/api/v1/profile/phone",
         method: "PUT",
         body: data,
       }),
@@ -163,7 +163,7 @@ export const profileApi = createApi({
     // Request OTP for email change
     requestEmailOTP: builder.mutation<ApiResponse, RequestEmailOTPRequest>({
       query: (data) => ({
-        url: "/api/profile/email/otp",
+        url: "/api/v1/profile/email/otp",
         method: "POST",
         body: data,
       }),
@@ -172,7 +172,7 @@ export const profileApi = createApi({
     // Change email with OTP
     changeEmail: builder.mutation<ProfileResponse, ChangeEmailRequest>({
       query: (data) => ({
-        url: "/api/profile/email",
+        url: "/api/v1/profile/email",
         method: "PUT",
         body: data,
       }),

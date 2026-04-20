@@ -1,268 +1,224 @@
-# BT01 - React Native Authentication App
+# BT01 - LaptopZone Mobile App
 
-A React Native Expo application with complete authentication features including Register, Login, Forget Password, and Reset Password.
+Ứng dụng mobile (Expo + React Native + TypeScript) cho bài toán thương mại điện tử.  
+Project tập trung vào các luồng người dùng chính: xác thực OTP, duyệt sản phẩm, giỏ hàng, đặt hàng, quản lý hồ sơ.
 
-## 🚀 Features
+## 1) Mục tiêu dự án
 
-- ✅ **Intro Screen** - 10-second splash screen with logo
-- ✅ **User Registration** - Create new account
-- ✅ **User Login** - Login with email and password
-- ✅ **Forget Password** - Request password reset token
-- ✅ **Reset Password** - Reset password with token
-- ✅ **Protected Home Screen** - View user profile
-- ✅ **Logout** - Clear session and return to login
-- ✅ **Token Persistence** - Stay logged in after app restart
+- Xây dựng app mobile tích hợp backend `BE_BTVN`.
+- Chuẩn hóa gọi API theo version `api/v1`.
+- Hoàn thiện các luồng sử dụng tương tự app production:
+  - Auth + OTP
+  - Home / Search / Wishlist / Cart / Profile
+  - Checkout / Orders / Order detail / Tracking
+  - Compare sản phẩm
 
-## 🛠️ Tech Stack
+## 2) Công nghệ sử dụng
 
-- **React Native** with **Expo**
-- **TypeScript** for type safety
-- **React Native Paper** for Material Design UI
-- **React Navigation** for screen navigation
-- **Redux Toolkit** with **RTK Query** for state management and API calls
-- **AsyncStorage** for token persistence
+- Expo + React Native
+- TypeScript
+- React Navigation (Stack + Bottom Tabs)
+- Redux Toolkit + RTK Query
+- AsyncStorage
+- React Native Paper
+- `twrnc` cho utility styles
 
-## 📋 Prerequisites
+## 3) Cấu trúc chính
 
-- Node.js >= 14.x
-- Expo CLI
-- Android Emulator or iOS Simulator (or Expo Go app on physical device)
-- **BE_BTVN backend** running on `http://localhost:5000`
-
-## 🔧 Installation
-
-### 1. Install dependencies
-
-```bash
-cd BT01
-npm install
-```
-
-### 2. Start the backend server
-
-Make sure the BE_BTVN backend is running:
-
-```bash
-cd ../BE_BTVN
-npm run dev
-```
-
-The backend should be running on `http://localhost:5000`
-
-### 3. Start the Expo development server
-
-```bash
-cd ../BT01
-npm start
-```
-
-### 4. Run on device/emulator
-
-- **Android Emulator**: Press `a`
-- **iOS Simulator**: Press `i`
-- **Physical Device**: Scan QR code with Expo Go app
-
-## 📱 App Flow
-
-```
-App Start
-  ↓
-Intro Screen (10 seconds)
-  ↓
-Login Screen
-  ├─→ Register Screen → Login
-  ├─→ Forget Password → Reset Password → Login
-  └─→ (After login) → Home Screen
-                        └─→ Logout → Login
-```
-
-## 🎨 Screens
-
-### 1. Intro Screen
-
-- Displays app logo for 10 seconds
-- Automatically navigates to Login or Home (if already logged in)
-
-### 2. Login Screen
-
-- Email and password inputs
-- Form validation
-- Navigate to Register or Forget Password
-- On success: Navigate to Home
-
-### 3. Register Screen
-
-- Name, email, password, and confirm password inputs
-- Form validation
-- On success: Navigate to Login
-
-### 4. Forget Password Screen
-
-- Email input
-- Generates reset token
-- Displays token (in production, sent via email)
-- Navigate to Reset Password with token
-
-### 5. Reset Password Screen
-
-- Token input (pre-filled from Forget Password)
-- New password and confirm password inputs
-- On success: Navigate to Login
-
-### 6. Home Screen
-
-- Displays user information (name, email, ID)
-- Logout button
-- Protected route (requires authentication)
-
-## 🔌 API Integration
-
-The app connects to the BE_BTVN backend API:
-
-| Screen          | Method | Endpoint                    | Description      |
-| --------------- | ------ | --------------------------- | ---------------- |
-| Register        | POST   | `/api/auth/register`        | Create new user  |
-| Login           | POST   | `/api/auth/login`           | Login user       |
-| Forget Password | POST   | `/api/auth/forget-password` | Get reset token  |
-| Reset Password  | POST   | `/api/auth/reset-password`  | Reset password   |
-| Home            | GET    | `/api/auth/me`              | Get current user |
-
-### API Base URL Configuration
-
-The API base URL is configured in `src/store/api/authApi.ts`:
-
-- **Android Emulator**: `http://10.0.2.2:5000/api`
-- **iOS Simulator**: `http://localhost:5000/api`
-- **Physical Device**: `http://YOUR_IP_ADDRESS:5000/api`
-
-> **Note**: For physical devices, you need to update the API_BASE_URL to your computer's IP address.
-
-## 📁 Project Structure
-
-```
+```text
 BT01/
 ├── src/
-│   ├── store/
-│   │   ├── index.ts              # Redux store configuration
-│   │   ├── authSlice.ts          # Auth state management
-│   │   └── api/
-│   │       └── authApi.ts        # RTK Query API endpoints
-│   ├── screens/
-│   │   ├── IntroScreen.tsx       # Splash screen
-│   │   ├── LoginScreen.tsx       # Login screen
-│   │   ├── RegisterScreen.tsx    # Registration screen
-│   │   ├── ForgetPasswordScreen.tsx  # Forget password
-│   │   ├── ResetPasswordScreen.tsx   # Reset password
-│   │   └── HomeScreen.tsx        # Home/Profile screen
-│   ├── navigation/
-│   │   └── AppNavigator.tsx      # Navigation configuration
-│   ├── types/
-│   │   └── index.ts              # TypeScript interfaces
-│   └── utils/
-│       └── validation.ts         # Form validation functions
-├── App.tsx                       # App entry point
+│   ├── navigation/        # AppNavigator, MainTabs
+│   ├── screens/           # Tất cả màn hình app
+│   ├── services/api/      # RTK Query API slices
+│   ├── store/             # Redux store + auth slice
+│   ├── components/        # Reusable UI components
+│   ├── theme/             # Màu sắc, typography, bóng đổ
+│   ├── types/             # Kiểu dữ liệu dùng chung
+│   └── utils/             # Formatter, validation
+├── App.tsx
 └── package.json
 ```
 
-## 🧪 Testing
+## 4) Luồng màn hình
 
-### Manual Testing Steps
+### 4.1 Authentication Flow
 
-1. **Intro Flow**
-   - Open app → See intro screen for 10 seconds → Navigate to Login
+1. `Intro`
+2. `Login`
+3. Nhánh:
+   - `Register` -> `OTPVerification (REGISTER)` -> `Home`
+   - `ForgetPassword` -> `OTPVerification (RESET_PASSWORD)` -> `ResetPassword` -> `Login`
 
-2. **Registration**
-   - Click "Register"
-   - Fill in name, email, password, confirm password
-   - Submit → Success message → Navigate to Login
+### 4.2 Main App Flow
 
-3. **Login**
-   - Enter registered email and password
-   - Submit → Navigate to Home
-   - See user information displayed
+Bottom tabs:
+- `HomeTab`
+- `SearchTab`
+- `WishlistTab`
+- `CartTab`
+- `ProfileTab`
 
-4. **Logout**
-   - Click "Logout" on Home screen
-   - Navigate back to Login
-   - Token cleared from storage
+Các màn stack bổ sung:
+- `ProductDetail`
+- `Compare`
+- `Notifications`
+- `Checkout`
+- `Orders`
+- `OrderDetail`
+- `OrderTracking`
+- `EditProfile`, `ChangePassword`, `ChangePhone`, `ChangeEmail`
 
-5. **Forget Password**
-   - Click "Forgot Password?" on Login
-   - Enter email
-   - Get reset token
-   - Click "Reset Password"
+## 5) API workflow (BE -> FE)
 
-6. **Reset Password**
-   - Token pre-filled
-   - Enter new password and confirm
-   - Submit → Navigate to Login
-   - Login with new password
+### 5.1 Auth
 
-7. **Token Persistence**
-   - Login to app
-   - Close app completely
-   - Reopen app → Should go directly to Home (still logged in)
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/verify-otp`
+- `POST /api/v1/auth/resend-otp`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/forget-password`
+- `POST /api/v1/auth/reset-password`
+- `GET /api/v1/auth/me`
 
-## 🔒 Security Features
+### 5.2 Product / Cart / Order
 
-- Password hashing on backend (bcrypt)
-- JWT token authentication
-- Token stored securely in AsyncStorage
-- Protected routes (Home screen requires authentication)
-- Form validation on all inputs
-- Password minimum length (6 characters)
-- Email format validation
+- Products:
+  - `GET /api/v1/products`
+  - `GET /api/v1/products/:id`
+  - `GET /api/v1/products/categories/all`
+  - `GET /api/v1/products/featured`
+  - `GET /api/v1/products/best-sellers`
+  - `GET /api/v1/products/discounted`
+- Cart:
+  - `GET /api/v1/cart`
+  - `POST /api/v1/cart/add`
+  - `PUT /api/v1/cart/item/:itemId`
+  - `DELETE /api/v1/cart/item/:itemId`
+  - `DELETE /api/v1/cart/clear`
+- Orders:
+  - `POST /api/v1/orders`
+  - `GET /api/v1/orders`
+  - `GET /api/v1/orders/:id`
+  - `PUT /api/v1/orders/:id/cancel`
 
-## 🐛 Troubleshooting
+## 6) Workflow các service chính
 
-### Cannot connect to backend
+Các service nằm trong `src/services/api` và được quản lý bởi RTK Query.
 
-**Error**: Network request failed
+### 6.1 `authApi` - Xác thực và vòng đời phiên
 
-**Solution**:
+- **Đầu vào**: thông tin đăng nhập/đăng ký, OTP, refresh token.
+- **Luồng chính**:
+  1. `register` -> nhận `email` để điều hướng sang OTP.
+  2. `verifyOTP (REGISTER)` -> nhận `token` + `user` -> lưu vào `authSlice`.
+  3. `login` -> nhận `token` + `refreshToken` + `user` -> set credentials.
+  4. `getCurrentUser` dùng để đồng bộ lại profile khi app mở.
+  5. `refresh` dùng để cấp lại access token khi cần.
+- **Đầu ra**: trạng thái đăng nhập toàn app (`authSlice`) + token cho các service protected.
 
-1. Make sure BE_BTVN backend is running on port 5000
-2. For Android emulator, use `http://10.0.2.2:5000/api`
-3. For physical device, update API_BASE_URL to your computer's IP address
+### 6.2 `productApi` - Danh sách, tìm kiếm, chi tiết sản phẩm
 
-### App crashes on startup
+- **Đầu vào**: params tìm kiếm/lọc/sắp xếp/pagination.
+- **Luồng chính**:
+  1. `getCategories` tải category filter ở Home/Search.
+  2. `getProducts` phục vụ danh sách Search theo query params.
+  3. `getBestSellers` và `getDiscountedProducts` cho Home sections.
+  4. `getProductById` cho màn Product Detail.
+- **Đầu ra**: dữ liệu render cards/list/detail; các màn Home, Search, ProductDetail phụ thuộc trực tiếp service này.
 
-**Solution**:
+### 6.3 `cartApi` - Quản lý giỏ hàng
 
-1. Clear cache: `npm start -- --clear`
-2. Reinstall dependencies: `rm -rf node_modules && npm install`
-3. Reset Expo: `expo start -c`
+- **Đầu vào**: `productId`, `quantity`, `itemId`.
+- **Luồng chính**:
+  1. `addToCart` từ Product Detail.
+  2. `getCart` để render Cart Screen + badge số lượng.
+  3. `updateCartItem` tăng/giảm số lượng.
+  4. `removeCartItem` hoặc `clearCart`.
+  5. Sau checkout thành công, cart được backend dọn item.
+- **RTK Query tags**: dùng `invalidatesTags/providesTags` với `Cart` để auto refetch.
+- **Đầu ra**: `CartScreen`, `CheckoutScreen`, `MainTabs` badge.
 
-### Login not working
+### 6.4 `orderApi` - Đặt hàng, lịch sử, theo dõi
 
-**Solution**:
+- **Đầu vào**: thông tin checkout + thao tác theo `orderId`.
+- **Luồng chính**:
+  1. `checkout` từ `CheckoutScreen`.
+  2. Điều hướng sang `OrderDetail` bằng `orderId` vừa tạo.
+  3. `getOrders` tải danh sách đơn ở `OrdersScreen`.
+  4. `getOrderById` cho `OrderDetail` và `OrderTracking`.
+  5. `cancelOrder`/`requestCancelOrder` theo điều kiện trạng thái đơn.
+- **Đầu ra**: toàn bộ luồng sau mua hàng (post-purchase flow).
 
-1. Check backend is running
-2. Verify user is registered in database
-3. Check network connection
-4. View console logs for error messages
+### 6.5 `profileApi` - Hồ sơ cá nhân và thông tin bảo mật
 
-## 📝 Development Notes
+- **Đầu vào**: payload cập nhật profile/password/phone/email.
+- **Luồng chính**:
+  1. `getProfile` -> hiển thị dữ liệu ở Profile Screen.
+  2. `updateProfile` -> cập nhật tên/avatar.
+  3. `changePassword`.
+  4. `requestPhoneOTP` + `changePhone`.
+  5. `requestEmailOTP` + `changeEmail`.
+- **Đầu ra**: đồng bộ thông tin user giữa backend và state local.
 
-- **Redux DevTools**: Enable in Redux store for debugging
-- **RTK Query**: Automatic caching and refetching
-- **AsyncStorage**: Token persists across app restarts
-- **React Native Paper**: Material Design components
-- **Form Validation**: Client-side validation before API calls
+### 6.6 Workflow liên service (E2E)
 
-## 🎓 Learning Resources
+1. User đăng nhập bằng `authApi`.
+2. User duyệt/tìm sản phẩm bằng `productApi`.
+3. User thêm giỏ bằng `cartApi`.
+4. User checkout bằng `orderApi`.
+5. User theo dõi/cancel đơn bằng `orderApi`.
+6. User cập nhật hồ sơ bằng `profileApi`.
 
-- [React Native Documentation](https://reactnative.dev/)
-- [Expo Documentation](https://docs.expo.dev/)
-- [React Navigation](https://reactnavigation.org/)
-- [Redux Toolkit](https://redux-toolkit.js.org/)
-- [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)
-- [React Native Paper](https://reactnativepaper.com/)
+> Gợi ý production: chuẩn hóa thêm cơ chế auto-refresh token dùng chung cho toàn bộ API slices khi gặp `401`.
 
-## 📄 License
+## 7) Workflow phát triển
 
-This project is for educational purposes (BTVN - Bài Tập Về Nhà).
+### 7.1 Setup local
 
-## 👨‍💻 Author
+```bash
+cd BE_BTVN
+npm install
+npm run dev
 
-BT01 Project - React Native Authentication App
+cd ../BT01
+npm install
+npm start
+```
+
+### 7.2 Quy trình làm tính năng
+
+1. Thiết kế dữ liệu và endpoint.
+2. Implement/điều chỉnh API slice (`src/services/api`).
+3. Bind vào screen + state cần thiết.
+4. Bổ sung loading/empty/error states.
+5. Type-check:
+   - `npx tsc --noEmit`
+6. Test tay end-to-end trên các flow chính.
+
+### 7.3 Quy ước UI/UX
+
+- Currency format chuẩn `vi-VN`.
+- Trạng thái rỗng phải có CTA điều hướng quay lại mua sắm.
+- Không dùng polling liên tục cho badge nếu có thể dùng event-driven update.
+
+## 8) Kiểm thử thủ công khuyến nghị
+
+- Đăng ký -> OTP -> đăng nhập.
+- Tìm kiếm + lọc + mở chi tiết sản phẩm.
+- Thêm yêu thích / thêm so sánh.
+- Thêm giỏ hàng -> checkout -> xem order detail/tracking.
+- Cập nhật hồ sơ và đổi mật khẩu.
+
+## 9) Lưu ý môi trường
+
+- Android emulator thường dùng base URL: `http://10.0.2.2:5000`.
+- Thiết bị thật cần đổi `EXPO_PUBLIC_API_BASE_URL` theo IP máy chạy backend.
+
+---
+
+Nếu cần, có thể tách thêm tài liệu:
+- `ARCHITECTURE.md` (kiến trúc chi tiết),
+- `TEST_PLAN.md` (test cases),
+- `RELEASE_CHECKLIST.md` (checklist trước release).

@@ -3,38 +3,54 @@ import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
+import { DeviceEventEmitter } from 'react-native';
 import { colors, shadows } from '../theme';
 import type { RootState } from '../store';
 import HomeScreen from '../screens/HomeScreen';
 import { CartScreen } from '../screens/CartScreen';
-import { OrdersScreen } from '../screens/OrdersScreen';
+import WishlistScreen from '../screens/WishlistScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import SearchScreen from '../screens/SearchScreen';
 import { useGetCartQuery } from '../services/api/cartApi';
-import { useGetOrdersQuery } from '../services/api/orderApi';
-import { OrderStatus } from '../types/order.types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabs() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+    const [wishlistCount, setWishlistCount] = React.useState<number>(0);
 
     // Fetch data for badges
     const { data: cartData } = useGetCartQuery(undefined, { skip: !isAuthenticated });
-    const { data: ordersData } = useGetOrdersQuery({ page: 1, limit: 50 }, { skip: !isAuthenticated });
+
+    React.useEffect(() => {
+        const loadWishlistCount = async () => {
+            const raw = await AsyncStorage.getItem('wishlistProductIds');
+            const ids: number[] = raw ? JSON.parse(raw) : [];
+            setWishlistCount(ids.length);
+        };
+
+        const sub = DeviceEventEmitter.addListener('wishlistChanged', (count?: number) => {
+            if (typeof count === 'number') {
+                setWishlistCount(count);
+            } else {
+                loadWishlistCount();
+            }
+        });
+
+        loadWishlistCount();
+        return () => sub.remove();
+    }, []);
 
     const cartBadge = useMemo(() => {
         const count = cartData?.data?.itemCount || 0;
         return count > 0 ? count : undefined;
     }, [cartData]);
 
-    const ordersBadge = useMemo(() => {
-        const activeOrders = ordersData?.data?.filter(order =>
-            [OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.SHIPPING].includes(order.status)
-        ) || [];
-        const count = activeOrders.length;
-        return count > 0 ? count : undefined;
-    }, [ordersData]);
+    const wishlistBadge = useMemo(
+        () => (wishlistCount > 0 ? wishlistCount : undefined),
+        [wishlistCount],
+    );
 
     return (
         <Tab.Navigator
@@ -47,10 +63,10 @@ export default function MainTabs() {
                         iconName = focused ? 'home' : 'home-outline';
                     } else if (route.name === 'SearchTab') {
                         iconName = focused ? 'search' : 'search-outline';
+                    } else if (route.name === 'WishlistTab') {
+                        iconName = focused ? 'heart' : 'heart-outline';
                     } else if (route.name === 'CartTab') {
                         iconName = focused ? 'cart' : 'cart-outline';
-                    } else if (route.name === 'OrdersTab') {
-                        iconName = focused ? 'receipt' : 'receipt-outline';
                     } else if (route.name === 'ProfileTab') {
                         iconName = focused ? 'person' : 'person-outline';
                     }
@@ -92,21 +108,20 @@ export default function MainTabs() {
                 options={{ tabBarLabel: 'Tìm kiếm' }}
             />
             <Tab.Screen
-                name="CartTab"
-                component={CartScreen as any}
+                name="WishlistTab"
+                component={WishlistScreen as any}
                 options={{
-                    tabBarLabel: 'Giỏ hàng',
-                    tabBarStyle: { display: 'none' },
-                    tabBarBadge: cartBadge,
+                    tabBarLabel: 'Yêu thích',
+                    tabBarBadge: wishlistBadge,
                     tabBarBadgeStyle: { backgroundColor: '#EE4D2D', color: 'white' }
                 }}
             />
             <Tab.Screen
-                name="OrdersTab"
-                component={OrdersScreen as any}
+                name="CartTab"
+                component={CartScreen as any}
                 options={{
-                    tabBarLabel: 'Đơn hàng',
-                    tabBarBadge: ordersBadge,
+                    tabBarLabel: 'Giỏ hàng',
+                    tabBarBadge: cartBadge,
                     tabBarBadgeStyle: { backgroundColor: '#EE4D2D', color: 'white' }
                 }}
             />

@@ -24,6 +24,11 @@ import ChangeEmailScreen from '../screens/ChangeEmailScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import { CheckoutScreen } from '../screens/CheckoutScreen';
 import { OrderDetailScreen } from '../screens/OrderDetailScreen';
+import { OrdersScreen } from '../screens/OrdersScreen';
+import WishlistScreen from '../screens/WishlistScreen';
+import CompareScreen from '../screens/CompareScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import OrderTrackingScreen from '../screens/OrderTrackingScreen';
 
 export type RootStackParamList = {
     Intro: undefined;
@@ -41,10 +46,14 @@ export type RootStackParamList = {
     ChangeEmail: undefined;
     Search: { categoryId?: number; sortBy?: string } | undefined;
     ProductDetail: { productId: number };
+    Compare: undefined;
+    Wishlist: undefined;
+    Notifications: undefined;
     Cart: undefined;
     Checkout: undefined;
     Orders: undefined;
     OrderDetail: { orderId: number };
+    OrderTracking: { orderId: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -127,14 +136,39 @@ export default function AppNavigator() {
                     options={{ title: 'Chi tiết sản phẩm' }}
                 />
                 <Stack.Screen
+                    name="Compare"
+                    component={CompareScreen}
+                    options={{ title: 'So sánh sản phẩm' }}
+                />
+                <Stack.Screen
+                    name="Wishlist"
+                    component={WishlistScreen}
+                    options={{ title: 'Yêu thích' }}
+                />
+                <Stack.Screen
+                    name="Notifications"
+                    component={NotificationsScreen}
+                    options={{ title: 'Thông báo' }}
+                />
+                <Stack.Screen
                     name="Checkout"
                     component={CheckoutScreen}
                     options={{ title: 'Thanh toán' }}
                 />
                 <Stack.Screen
+                    name="Orders"
+                    component={OrdersScreen}
+                    options={{ title: 'Đơn hàng của tôi' }}
+                />
+                <Stack.Screen
                     name="OrderDetail"
                     component={OrderDetailScreen}
                     options={{ title: 'Chi tiết đơn hàng' }}
+                />
+                <Stack.Screen
+                    name="OrderTracking"
+                    component={OrderTrackingScreen}
+                    options={{ title: 'Theo dõi đơn hàng' }}
                 />
                 <Stack.Screen
                     name="EditProfile"
