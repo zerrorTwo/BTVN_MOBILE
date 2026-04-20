@@ -3,7 +3,12 @@ import { validationResult } from "express-validator";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model";
 import { IAuthResponse } from "../types";
-import { generateToken } from "../utils/jwt";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  generateToken,
+  verifyRefreshToken,
+} from "../utils/jwt";
 import {
   generateOTP,
   getOTPExpiry,
@@ -128,7 +133,9 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       const response: IAuthResponse = {
         success: true,
         message: "Account verified successfully",
-        token,
+      token,
+      // Keep flat fields for old clients, add `data` for new response shape.
+      data: { token },
         user: {
           id: user.id,
           name: user.name,
@@ -267,11 +274,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = generateToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
 
     const response: IAuthResponse = {
       success: true,
       message: "Login successful",
       token,
+      refreshToken,
+      data: { token, refreshToken },
       user: {
         id: user.id,
         name: user.name,
@@ -457,4 +467,45 @@ export const getCurrentUser = async (
       message: "Server error",
     });
   }
+};
+
+export const refresh = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { refreshToken } = req.body as { refreshToken?: string };
+
+    if (!refreshToken) {
+      res.status(400).json({
+        success: false,
+        message: "Refresh token is required",
+      });
+      return;
+    }
+
+    const decoded = verifyRefreshToken(refreshToken);
+    const token = generateAccessToken(decoded.userId);
+    const newRefreshToken = generateRefreshToken(decoded.userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      token,
+      refreshToken: newRefreshToken,
+      data: {
+        token,
+        refreshToken: newRefreshToken,
+      },
+    });
+  } catch (error: any) {
+    res.status(401).json({
+      success: false,
+      message: error?.message || "Invalid or expired refresh token",
+    });
+  }
+};
+
+export const logout = async (_req: Request, res: Response): Promise<void> => {
+  res.status(200).json({
+    success: true,
+    message: "Logout successful",
+  });
 };

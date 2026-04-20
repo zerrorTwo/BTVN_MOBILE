@@ -5,6 +5,8 @@ import {
   verifyOTP,
   resendOTP,
   login,
+  refresh,
+  logout,
   forgetPassword,
   resetPassword,
   getCurrentUser,
@@ -13,6 +15,7 @@ import {
   authMiddleware,
   resetPasswordMiddleware,
 } from "../middleware/auth.middleware";
+import { changePassword } from "../controllers/profile.controller";
 
 const router = Router();
 
@@ -55,10 +58,26 @@ const resetPasswordValidation = [
     .withMessage("Password must be at least 6 characters long"),
 ];
 
+const refreshValidation = [
+  body("refreshToken").notEmpty().withMessage("Refresh token is required"),
+];
+
+const changePasswordValidation = [
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long"),
+  body("confirmPassword").notEmpty().withMessage("Confirm password is required"),
+];
+
 router.post("/register", registerValidation, register);
 router.post("/verify-otp", verifyOTPValidation, verifyOTP);
 router.post("/resend-otp", resendOTPValidation, resendOTP);
 router.post("/login", loginValidation, login);
+router.post("/refresh", refreshValidation, refresh);
+router.post("/logout", authMiddleware, logout);
 router.post("/forget-password", forgetPasswordValidation, forgetPassword);
 router.post(
   "/reset-password",
@@ -68,5 +87,11 @@ router.post(
 );
 
 router.get("/me", authMiddleware, getCurrentUser);
+router.put(
+  "/change-password",
+  authMiddleware,
+  changePasswordValidation,
+  changePassword,
+);
 
 export default router;

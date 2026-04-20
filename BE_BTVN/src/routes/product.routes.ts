@@ -43,14 +43,12 @@ const getProductsValidation = [
 router.get("/", getProductsValidation, getProducts);
 
 router.get("/featured", getFeaturedProducts);
+router.get("/categories/all", getCategories);
 
 router.get("/best-sellers", getBestSellers);
 
 router.get("/discounted", getDiscountedProducts);
 
 router.get("/:id", getProductById);
-
-
-router.get("/categories/all", getCategories);
 
 export default router;
