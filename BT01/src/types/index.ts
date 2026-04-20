@@ -29,9 +29,11 @@ export interface AuthResponse {
   success: boolean;
   message: string;
   token?: string;
+  refreshToken?: string;
   resetToken?: string;
   email?: string;
   code?: string;
+  data?: Record<string, unknown>;
   user?: User;
 }
 

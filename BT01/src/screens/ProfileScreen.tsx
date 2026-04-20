@@ -80,6 +80,30 @@ export default function ProfileScreen({ navigation }: any) {
 
     const profileItems = [
         {
+            title: 'Đơn hàng của tôi',
+            description: 'Theo dõi trạng thái đơn hàng',
+            icon: 'package-variant-closed',
+            onPress: () => navigation.navigate('Orders'),
+        },
+        {
+            title: 'Sản phẩm yêu thích',
+            description: 'Danh sách đã lưu',
+            icon: 'heart-outline',
+            onPress: () => navigation.navigate('Wishlist'),
+        },
+        {
+            title: 'So sánh sản phẩm',
+            description: 'Tối đa 3 sản phẩm',
+            icon: 'compare',
+            onPress: () => navigation.navigate('Compare'),
+        },
+        {
+            title: 'Thông báo',
+            description: 'Cập nhật đơn hàng và hệ thống',
+            icon: 'bell-outline',
+            onPress: () => navigation.navigate('Notifications'),
+        },
+        {
             title: 'Chỉnh sửa hồ sơ',
             description: 'Thay đổi tên và ảnh đại diện',
             icon: 'account-edit',

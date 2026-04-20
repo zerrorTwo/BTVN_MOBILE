@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, ScrollView, Image, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, Image, TouchableOpacity, FlatList, Dimensions, Alert, DeviceEventEmitter } from 'react-native';
 import { Text, Button, Chip, Divider, ActivityIndicator, IconButton, Snackbar } from 'react-native-paper';
 import tw from 'twrnc';
 import { useSelector } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGetProductByIdQuery } from '../services/api/productApi';
 import { useAddToCartMutation } from '../services/api/cartApi';
 import Layout from '../components/Layout';
@@ -13,6 +14,8 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const WISHLIST_KEY = 'wishlistProductIds';
+const COMPARE_KEY = 'compareProductIds';
 
 export default function ProductDetailScreen({ route, navigation }: Props) {
     const { productId } = route.params;
@@ -25,6 +28,16 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
     const { data, isLoading, error } = useGetProductByIdQuery(productId);
     const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
     const product = data?.product;
+
+    useEffect(() => {
+        const loadWishlistState = async () => {
+            const raw = await AsyncStorage.getItem(WISHLIST_KEY);
+            const ids: number[] = raw ? JSON.parse(raw) : [];
+            setIsFavorite(ids.includes(productId));
+        };
+
+        loadWishlistState();
+    }, [productId]);
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -51,6 +64,47 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
         } catch (error: any) {
             setSnackMessage(error.data?.message || 'Không thể thêm vào giỏ hàng');
         }
+    };
+
+    const toggleWishlist = async () => {
+        if (!user) {
+            setSnackMessage('Vui lòng đăng nhập để thêm sản phẩm yêu thích');
+            navigation.navigate('Login');
+            return;
+        }
+
+        const raw = await AsyncStorage.getItem(WISHLIST_KEY);
+        const ids: number[] = raw ? JSON.parse(raw) : [];
+        const exists = ids.includes(productId);
+        const next = exists ? ids.filter((id) => id !== productId) : [...ids, productId];
+        await AsyncStorage.setItem(WISHLIST_KEY, JSON.stringify(next));
+        DeviceEventEmitter.emit('wishlistChanged', next.length);
+        setIsFavorite(!exists);
+        setSnackMessage(
+            exists
+                ? `Đã bỏ ${product?.name} khỏi yêu thích`
+                : `Đã thêm ${product?.name} vào yêu thích`,
+        );
+    };
+
+    const addToCompare = async () => {
+        const raw = await AsyncStorage.getItem(COMPARE_KEY);
+        const ids: number[] = raw ? JSON.parse(raw) : [];
+
+        if (ids.includes(productId)) {
+            navigation.navigate('Compare');
+            return;
+        }
+
+        if (ids.length >= 3) {
+            setSnackMessage('Chỉ được so sánh tối đa 3 sản phẩm');
+            return;
+        }
+
+        const next = [...ids, productId];
+        await AsyncStorage.setItem(COMPARE_KEY, JSON.stringify(next));
+        DeviceEventEmitter.emit('compareChanged', next.length);
+        setSnackMessage(`Đã thêm ${product?.name} vào so sánh`);
     };
 
     const handleBuyNow = async () => {
@@ -230,27 +284,14 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     size={24}
                     iconColor="#EE4D2D"
                     style={tw`w-12 h-12 border border-gray-300 rounded-xl m-0 mr-3`}
-                    onPress={() => {
-                        if (!user) {
-                            setSnackMessage('Vui lòng đăng nhập để thêm sản phẩm yêu thích');
-                            navigation.navigate('Login');
-                            return;
-                        }
-                        setIsFavorite(!isFavorite);
-                        setSnackMessage(
-                            isFavorite
-                                ? `Đã bỏ ${product.name} khỏi yêu thích`
-                                : `Đã thêm ${product.name} vào yêu thích`
-                        );
-                    }}
+                    onPress={toggleWishlist}
                 />
                 <IconButton
-                    icon="cart-plus"
+                    icon="compare"
                     size={24}
                     iconColor="#EE4D2D"
                     style={tw`w-12 h-12 border border-[#EE4D2D] rounded-xl m-0 mr-3`}
-                    onPress={handleAddToCart}
-                    disabled={isAddingToCart}
+                    onPress={addToCompare}
                 />
                 <Button
                     mode="contained"

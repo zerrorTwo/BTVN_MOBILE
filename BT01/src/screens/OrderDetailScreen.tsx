@@ -227,6 +227,15 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
             {/* Action Buttons */}
             {!showCancelInput && !isTerminal && order.canCancel !== "none" && (
                 <View style={tw`bg-white px-4 py-3 border-t border-gray-200`}>
+                    <View style={tw`flex-row gap-2 mb-2`}>
+                        <Button
+                            mode="contained-tonal"
+                            onPress={() => navigation.navigate("OrderTracking", { orderId })}
+                            style={tw`flex-1`}
+                        >
+                            Theo dõi đơn
+                        </Button>
+                    </View>
                     <View style={tw`flex-row gap-2`}>
                         <Button
                             mode="outlined"

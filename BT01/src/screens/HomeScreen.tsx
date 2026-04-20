@@ -103,7 +103,7 @@ export default function HomeScreen({ navigation }: Props) {
           <HomeHeader
             userName={user?.name || 'Khách'}
             isAuthenticated={!!user}
-            onNotificationPress={() => { }}
+            onNotificationPress={() => navigation.navigate('Notifications')}
             onProfilePress={() => navigation.navigate('ProfileTab' as any)}
             onLoginPress={() => navigation.navigate('Login')}
             onSearchPress={() => navigation.navigate('SearchTab' as any)}
@@ -205,8 +205,8 @@ export default function HomeScreen({ navigation }: Props) {
                     )}
                     numColumns={2}
                     scrollEnabled={false}
-                    contentContainerStyle={tw`px-3`}
-                    columnWrapperStyle={tw`justify-between`}
+                    contentContainerStyle={tw`px-4`}
+                    columnWrapperStyle={tw`justify-between mb-2`}
                     ListEmptyComponent={
                       <View style={tw`py-8 w-full items-center`}>
                         <IconButton
