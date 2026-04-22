@@ -7,7 +7,18 @@ import profileRoutes from "./routes/profile.routes";
 import productRoutes from "./routes/product.routes";
 import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
-import { Product, Category, Cart, CartItem, Order, OrderItem } from "./models";
+import adminRoutes from "./routes/admin.routes";
+import {
+  User,
+  Product,
+  Category,
+  Cart,
+  CartItem,
+  Order,
+  OrderItem,
+  Coupon,
+  Review,
+} from "./models";
 import seedProducts from "./utils/seeder";
 import { errorHandler } from "./middleware/error.middleware";
 import emailService from "./services/email.service";
@@ -67,6 +78,7 @@ app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 // Backward compatible routes for existing clients
 app.use("/api/auth", authRoutes);
@@ -74,6 +86,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use(errorHandler);
 
@@ -81,12 +94,15 @@ const startServer = async () => {
   try {
     await connectDatabase();
 
+    await User.sync();
     await Category.sync();
     await Product.sync();
     await Cart.sync();
     await CartItem.sync();
     await Order.sync();
     await OrderItem.sync();
+    await Coupon.sync();
+    await Review.sync();
 
     await seedProducts();
 
