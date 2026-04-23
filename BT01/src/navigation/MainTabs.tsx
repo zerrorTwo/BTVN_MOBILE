@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
@@ -75,8 +75,13 @@ export default function MainTabs() {
 
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
-                tabBarActiveTintColor: colors.primary.main,
+                tabBarActiveTintColor: '#0B5ED7',
                 tabBarInactiveTintColor: colors.text.secondary,
+                tabBarPressColor: 'rgba(11, 94, 215, 0.12)',
+                tabBarPressOpacity: 0.75,
+                tabBarButton: (props: any) => (
+                    <TouchableOpacity {...props} activeOpacity={0.75} />
+                ),
                 tabBarStyle: {
                     position: 'absolute',
                     bottom: insets.bottom,
@@ -100,6 +105,8 @@ export default function MainTabs() {
                 },
                 tabBarItemStyle: {
                     paddingVertical: 4,
+                    borderRadius: 12,
+                    overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
                 },
             })}
         >

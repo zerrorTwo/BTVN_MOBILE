@@ -272,10 +272,10 @@ export default function SearchScreen({ navigation, route }: any) {
 
     return (
         <Layout>
-            <SafeAreaView style={tw`flex-1 bg-[#EE4D2D]`} edges={['top']}>
-                <StatusBar style="light" backgroundColor="#EE4D2D" />
+            <SafeAreaView style={tw`flex-1 bg-[#0B5ED7]`} edges={['top']}>
+                <StatusBar style="light" backgroundColor="#0B5ED7" />
                 {/* Search and Filters Header - Fixed at top to prevent focus loss */}
-                <View style={tw`bg-[#EE4D2D] px-1 pb-2`}>
+                <View style={tw`bg-[#0B5ED7] px-1 pb-2`}>
                     <Searchbar
                         placeholder="Tìm kiếm sản phẩm..."
                         onChangeText={setSearchText}

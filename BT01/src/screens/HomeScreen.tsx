@@ -121,8 +121,8 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <Layout>
-      <SafeAreaView style={tw`flex-1 bg-[#EE4D2D]`} edges={['top']}>
-        <StatusBar style="light" backgroundColor="#EE4D2D" />
+      <SafeAreaView style={tw`flex-1 bg-[#0B5ED7]`} edges={['top']}>
+        <StatusBar style="light" backgroundColor="#0B5ED7" />
         <HomeHeader
           userName={user?.name || 'Khách'}
           isAuthenticated={!!user}
@@ -185,7 +185,7 @@ export default function HomeScreen({ navigation }: Props) {
               />
               {categoriesLoading ? (
                 <View style={tw`px-4 py-2`}>
-                  <SkeletonPlaceholder>
+                  <SkeletonPlaceholder speed={0}>
                     <View style={tw`flex-row`}>
                       {[1, 2, 3, 4].map((item) => (
                         <View key={item} style={{ width: 90, marginRight: 10 }}>
@@ -239,7 +239,7 @@ export default function HomeScreen({ navigation }: Props) {
               />
               {bestSellersLoading ? (
                 <View style={tw`px-4 py-2`}>
-                  <SkeletonPlaceholder>
+                  <SkeletonPlaceholder speed={0}>
                     <View style={tw`flex-row`}>
                       {[1, 2].map((item) => (
                         <View key={item} style={{ width: 260, marginRight: 10 }}>
@@ -288,7 +288,7 @@ export default function HomeScreen({ navigation }: Props) {
               />
               {discountedLoading ? (
                 <View style={tw`px-4 py-2`}>
-                  <SkeletonPlaceholder>
+                  <SkeletonPlaceholder speed={0}>
                     <View style={tw`flex-row justify-between`}>
                       <View style={{ width: '48%', height: 220, borderRadius: 16 }} />
                       <View style={{ width: '48%', height: 220, borderRadius: 16 }} />

@@ -114,7 +114,7 @@ export const OrdersScreen = ({ navigation }: any) => {
             </Text>
             <Button
                 mode="contained"
-                onPress={() => navigation.navigate("HomeTab")}
+                onPress={() => navigation.navigate("Home", { screen: "HomeTab" })}
                 style={tw`mt-6 rounded-xl`}
                 buttonColor="#0B5ED7"
             >

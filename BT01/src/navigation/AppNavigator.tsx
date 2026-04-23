@@ -108,7 +108,7 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="Login"
                     component={LoginScreen}
-                    options={{ title: 'Đăng nhập' }}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="Register"
@@ -135,7 +135,7 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="ProductDetail"
                     component={ProductDetailScreen}
-                    options={{ title: 'Chi tiết sản phẩm' }}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="Compare"
@@ -150,12 +150,12 @@ export default function AppNavigator() {
                 <Stack.Screen
                     name="Notifications"
                     component={NotificationsScreen}
-                    options={{ title: 'Thông báo' }}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="Checkout"
                     component={CheckoutScreen}
-                    options={{ title: 'Thanh toán' }}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="Orders"

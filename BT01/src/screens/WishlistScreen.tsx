@@ -73,7 +73,7 @@ export default function WishlistScreen({ navigation }: any) {
             <Button
               mode="contained"
               buttonColor="#0B5ED7"
-              onPress={() => navigation.navigate("HomeTab")}
+              onPress={() => navigation.navigate("Home", { screen: "HomeTab" })}
             >
               Khám phá sản phẩm
             </Button>

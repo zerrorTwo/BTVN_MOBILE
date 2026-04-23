@@ -146,7 +146,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
 
     return (
         <Layout>
-            <StatusBar style="light" />
+            <StatusBar style={showCompactHeader ? 'light' : 'dark'} />
             <ScrollView
                 style={tw`flex-1 bg-gray-100`}
                 onScroll={(event) => {
@@ -287,7 +287,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                 </View>
 
                 {/* Spacer for bottom button */}
-                <View style={tw`h-24`} />
+                <View style={{ height: 92 + insets.bottom }} />
             </ScrollView>
 
             <View
@@ -297,7 +297,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                         top: 0,
                         paddingTop: insets.top + 4,
                         paddingBottom: 8,
-                        backgroundColor: showCompactHeader ? '#EE4D2D' : 'transparent',
+                        backgroundColor: showCompactHeader ? '#0B5ED7' : 'transparent',
                     },
                 ]}
             >
@@ -328,7 +328,12 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
             </View>
 
             {/* Bottom Action Bar */}
-            <View style={tw`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex-row items-center`}>
+            <View
+                style={[
+                    tw`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 pt-3 flex-row items-center`,
+                    { paddingBottom: 12 + insets.bottom },
+                ]}
+            >
                 <IconButton
                     icon={isFavorite ? "heart" : "heart-outline"}
                     size={24}
@@ -344,13 +349,14 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     onPress={addToCompare}
                 />
                 <Button
-                    mode="outlined"
+                    mode="contained"
                     onPress={handleAddToCart}
                     loading={isAddingToCart}
                     disabled={isAddingToCart}
                     icon="cart-plus"
                     style={tw`flex-1 rounded-xl`}
                     buttonColor="#0B5ED7"
+                    textColor="#FFFFFF"
                     contentStyle={tw`py-2`}
                 >
                     Thêm giỏ • {formatPrice(Number(product.price) * quantity)}
