@@ -67,7 +67,9 @@ export default function CompareScreen({ navigation }: any) {
           </Text>
 
           {isLoading ? (
-            <Text>Đang tải dữ liệu so sánh...</Text>
+            <View style={tw`py-8 items-center`}>
+              <Text style={tw`text-gray-500`}>Đang tải dữ liệu so sánh...</Text>
+            </View>
           ) : compareProducts.length === 0 ? (
             <Card style={tw`rounded-xl`}>
               <Card.Content>
@@ -79,7 +81,7 @@ export default function CompareScreen({ navigation }: any) {
                 </Text>
                 <Button
                   mode="contained"
-                  buttonColor="#EE4D2D"
+                  buttonColor="#0B5ED7"
                   style={tw`mt-4`}
                   onPress={() => navigation.navigate("Home", { screen: "HomeTab" })}
                 >
