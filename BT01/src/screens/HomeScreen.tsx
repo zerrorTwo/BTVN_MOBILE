@@ -163,140 +163,140 @@ export default function HomeScreen({ navigation }: Props) {
           onEndReachedThreshold={0.3}
           ListHeaderComponent={(
             <View style={tw`mt-8`}>
-            <View style={tw`px-4 mb-5`}>
-              <Card style={tw`rounded-2xl bg-[#eaf3ff]`} elevation={0}>
-                <Card.Content style={tw`py-3`}>
-                  <Text style={tw`text-[#0059c9] font-bold text-base`}>
-                    Mega Sale công nghệ
-                  </Text>
-                  <Text style={tw`text-[#1f2937] text-xs mt-1`}>
-                    Ưu đãi laptop, gear và phụ kiện chính hãng mỗi ngày
-                  </Text>
-                </Card.Content>
-              </Card>
-            </View>
-            {/* Categories Section */}
-            <View style={tw`mb-6`}>
-              <SectionHeader
-                title="Danh mục"
-                subtitle="Khám phá theo danh mục"
-                icon="shape"
-                iconColor="#0059c9"
-              />
-              {categoriesLoading ? (
-                <View style={tw`px-4 py-2`}>
-                  <SkeletonPlaceholder speed={0}>
-                    <View style={tw`flex-row`}>
-                      {[1, 2, 3, 4].map((item) => (
-                        <View key={item} style={{ width: 90, marginRight: 10 }}>
-                          <View style={{ width: 90, height: 90, borderRadius: 16 }} />
-                        </View>
-                      ))}
-                    </View>
-                  </SkeletonPlaceholder>
-                </View>
-              ) : (
-                <FlatList
-                  data={visibleCategories}
-                  keyExtractor={(item) => `cat-${item.id}`}
-                  renderItem={({ item }) => (
-                    <CategoryCard
-                      item={item}
-                      onPress={() => handleCategoryPress(item.id)}
-                    />
-                  )}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={tw`px-2`}
-                  onEndReached={() => {
-                    if (categoryVisibleCount < categories.length) {
-                      setCategoryVisibleCount((prev) => Math.min(prev + 8, categories.length));
+              <View style={tw`px-4 mb-5`}>
+                <Card style={tw`rounded-2xl bg-[#eaf3ff]`} elevation={0}>
+                  <Card.Content style={tw`py-3`}>
+                    <Text style={tw`text-[#0059c9] font-bold text-base`}>
+                      Mega Sale công nghệ
+                    </Text>
+                    <Text style={tw`text-[#1f2937] text-xs mt-1`}>
+                      Ưu đãi laptop, gear và phụ kiện chính hãng mỗi ngày
+                    </Text>
+                  </Card.Content>
+                </Card>
+              </View>
+              {/* Categories Section */}
+              <View style={tw`mb-6`}>
+                <SectionHeader
+                  title="Danh mục"
+                  subtitle="Khám phá theo danh mục"
+                  icon="shape"
+                  iconColor="#0059c9"
+                />
+                {categoriesLoading ? (
+                  <View style={tw`px-4 py-2`}>
+                    <SkeletonPlaceholder speed={0}>
+                      <View style={tw`flex-row`}>
+                        {[1, 2, 3, 4].map((item) => (
+                          <View key={item} style={{ width: 90, marginRight: 10 }}>
+                            <View style={{ width: 90, height: 90, borderRadius: 16 }} />
+                          </View>
+                        ))}
+                      </View>
+                    </SkeletonPlaceholder>
+                  </View>
+                ) : (
+                  <FlatList
+                    data={visibleCategories}
+                    keyExtractor={(item) => `cat-${item.id}`}
+                    renderItem={({ item }) => (
+                      <CategoryCard
+                        item={item}
+                        onPress={() => handleCategoryPress(item.id)}
+                      />
+                    )}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={tw`px-2`}
+                    onEndReached={() => {
+                      if (categoryVisibleCount < categories.length) {
+                        setCategoryVisibleCount((prev) => Math.min(prev + 8, categories.length));
+                      }
+                    }}
+                    onEndReachedThreshold={0.4}
+                    ListEmptyComponent={
+                      <View style={tw`px-4 py-8 items-center`}>
+                        <Text style={tw`text-gray-400`}>Không có danh mục</Text>
+                      </View>
                     }
-                  }}
-                  onEndReachedThreshold={0.4}
-                  ListEmptyComponent={
-                    <View style={tw`px-4 py-8 items-center`}>
-                      <Text style={tw`text-gray-400`}>Không có danh mục</Text>
-                    </View>
+                  />
+                )}
+              </View>
+
+              {/* Best Sellers Section */}
+              <View style={tw`mb-6`}>
+                <SectionHeader
+                  title="Bán chạy nhất"
+                  subtitle="Top 10 sản phẩm hot nhất"
+                  icon="fire"
+                  iconColor="#0059c9"
+                  onSeeAll={() =>
+                    navigation.navigate('Home', {
+                      screen: 'SearchTab',
+                      params: { sortBy: 'sold' },
+                    })
                   }
                 />
-              )}
-            </View>
-
-            {/* Best Sellers Section */}
-            <View style={tw`mb-6`}>
-              <SectionHeader
-                title="Bán chạy nhất"
-                subtitle="Top 10 sản phẩm hot nhất"
-                icon="fire"
-                iconColor="#0059c9"
-                onSeeAll={() =>
-                  navigation.navigate('Home', {
-                    screen: 'SearchTab',
-                    params: { sortBy: 'sold' },
-                  })
-                }
-              />
-              {bestSellersLoading ? (
-                <View style={tw`px-4 py-2`}>
-                  <SkeletonPlaceholder speed={0}>
-                    <View style={tw`flex-row`}>
-                      {[1, 2].map((item) => (
-                        <View key={item} style={{ width: 260, marginRight: 10 }}>
-                          <View style={{ width: 260, height: 110, borderRadius: 14 }} />
-                        </View>
-                      ))}
-                    </View>
-                  </SkeletonPlaceholder>
-                </View>
-              ) : (
-                <FlatList
-                  data={bestSellers}
-                  keyExtractor={(item) => `best-${item.id}`}
-                  renderItem={({ item }) => (
-                    <HorizontalProductCard
-                      item={item}
-                      onPress={() => handleProductPress(item.id)}
-                      onAddToCart={handleAddToCart}
-                    />
-                  )}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={tw`px-2`}
-                  onEndReached={() => {
-                    if (!bestSellersLoading && bestSellers.length >= bestSellerLimit) {
-                      setBestSellerLimit((prev) => prev + 10);
+                {bestSellersLoading ? (
+                  <View style={tw`px-4 py-2`}>
+                    <SkeletonPlaceholder speed={0}>
+                      <View style={tw`flex-row`}>
+                        {[1, 2].map((item) => (
+                          <View key={item} style={{ width: 260, marginRight: 10 }}>
+                            <View style={{ width: 260, height: 110, borderRadius: 14 }} />
+                          </View>
+                        ))}
+                      </View>
+                    </SkeletonPlaceholder>
+                  </View>
+                ) : (
+                  <FlatList
+                    data={bestSellers}
+                    keyExtractor={(item) => `best-${item.id}`}
+                    renderItem={({ item }) => (
+                      <HorizontalProductCard
+                        item={item}
+                        onPress={() => handleProductPress(item.id)}
+                        onAddToCart={handleAddToCart}
+                      />
+                    )}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={tw`px-2`}
+                    onEndReached={() => {
+                      if (!bestSellersLoading && bestSellers.length >= bestSellerLimit) {
+                        setBestSellerLimit((prev) => prev + 10);
+                      }
+                    }}
+                    onEndReachedThreshold={0.4}
+                    ListEmptyComponent={
+                      <View style={tw`px-4 py-8 items-center`}>
+                        <Text style={tw`text-gray-400`}>Không có sản phẩm</Text>
+                      </View>
                     }
-                  }}
-                  onEndReachedThreshold={0.4}
-                  ListEmptyComponent={
-                    <View style={tw`px-4 py-8 items-center`}>
-                      <Text style={tw`text-gray-400`}>Không có sản phẩm</Text>
-                    </View>
-                  }
-                />
-              )}
-            </View>
+                  />
+                )}
+              </View>
 
-            {/* Discounted Products Section */}
-            <View style={tw`mb-6 `}>
-              <SectionHeader
-                title="Khuyến mãi hot"
-                subtitle="20 sản phẩm giảm giá sâu nhất"
-                icon="tag-multiple"
-                iconColor="#0059c9"
-              />
-              {discountedLoading ? (
-                <View style={tw`px-4 py-2`}>
-                  <SkeletonPlaceholder speed={0}>
-                    <View style={tw`flex-row justify-between`}>
-                      <View style={{ width: '48%', height: 220, borderRadius: 16 }} />
-                      <View style={{ width: '48%', height: 220, borderRadius: 16 }} />
-                    </View>
-                  </SkeletonPlaceholder>
-                </View>
-              ) : null}
-            </View>
+              {/* Discounted Products Section */}
+              <View style={tw`mb-6 `}>
+                <SectionHeader
+                  title="Khuyến mãi hot"
+                  subtitle="20 sản phẩm giảm giá sâu nhất"
+                  icon="tag-multiple"
+                  iconColor="#0059c9"
+                />
+                {discountedLoading ? (
+                  <View style={tw`px-4 py-2`}>
+                    <SkeletonPlaceholder speed={0}>
+                      <View style={tw`flex-row justify-between`}>
+                        <View style={{ width: '48%', height: 220, borderRadius: 16 }} />
+                        <View style={{ width: '48%', height: 220, borderRadius: 16 }} />
+                      </View>
+                    </SkeletonPlaceholder>
+                  </View>
+                ) : null}
+              </View>
             </View>
           )}
           ListEmptyComponent={

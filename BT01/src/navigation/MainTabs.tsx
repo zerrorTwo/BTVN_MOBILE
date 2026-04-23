@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Platform, TouchableOpacity } from 'react-native';
+import { Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
@@ -21,6 +21,10 @@ export default function MainTabs() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
     const [wishlistCount, setWishlistCount] = React.useState<number>(0);
     const insets = useSafeAreaInsets();
+    const { width: screenWidth } = useWindowDimensions();
+
+    // Web tab bar: max 560px, fills screen on mobile
+    const webTabBarWidth = Math.min(screenWidth - 40, 560);
 
     // Fetch data for badges
     const { data: cartData } = useGetCartQuery(undefined, { skip: !isAuthenticated });
@@ -79,24 +83,42 @@ export default function MainTabs() {
                 tabBarInactiveTintColor: colors.text.secondary,
                 tabBarPressColor: 'rgba(11, 94, 215, 0.12)',
                 tabBarPressOpacity: 0.75,
-                tabBarButton: (props: any) => (
-                    <TouchableOpacity {...props} activeOpacity={0.75} />
-                ),
-                tabBarStyle: {
-                    position: 'absolute',
-                    bottom: insets.bottom,
-                    left: 20,
-                    right: 20,
-                    height: 38 + insets.bottom,
-                    borderRadius: 16,
-                    backgroundColor: colors.background.paper,
-                    paddingBottom: insets.bottom,
-                    paddingTop: 8,
-                    borderTopWidth: 0,
-                    ...shadows.lg,
-                },
+                // Custom TouchableOpacity breaks press events on web — native only
+                ...(Platform.OS !== 'web' && {
+                    tabBarButton: (props: any) => (
+                        <TouchableOpacity {...props} activeOpacity={0.75} />
+                    ),
+                }),
+                tabBarStyle: Platform.OS === 'web'
+                    ? {
+                        // Web: normal flow (NOT absolute) so content is never hidden under it
+                        // Still apply a centered pill look with margins
+                        height: 60,
+                        marginHorizontal: Math.max((screenWidth - webTabBarWidth) / 2, 0),
+                        marginBottom: 12,
+                        borderRadius: 24,
+                        backgroundColor: colors.background.paper,
+                        paddingBottom: 8,
+                        paddingTop: 8,
+                        borderTopWidth: 0,
+                        ...shadows.lg,
+                    }
+                    : {
+                        position: 'absolute',
+                        bottom: insets.bottom,
+                        left: 20,
+                        right: 20,
+                        height: 60 + insets.bottom,
+                        borderRadius: 16,
+                        backgroundColor: colors.background.paper,
+                        paddingBottom: insets.bottom,
+                        paddingTop: 8,
+                        borderTopWidth: 0,
+                        ...shadows.lg,
+                    },
                 sceneStyle: {
-                    paddingBottom: 96,
+                    // Native: extra padding for the absolute floating tab bar
+                    paddingBottom: Platform.OS === 'web' ? 0 : 80 + insets.bottom,
                     backgroundColor: colors.background.default,
                 },
                 tabBarLabelStyle: {

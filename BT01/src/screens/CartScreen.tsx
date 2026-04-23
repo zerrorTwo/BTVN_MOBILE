@@ -5,6 +5,7 @@ import {
     ScrollView,
     TouchableOpacity,
     RefreshControl,
+    Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Portal, Modal } from "react-native-paper";
@@ -274,10 +275,12 @@ export const CartScreen = ({ navigation }: any) => {
                 animate={{ translateY: 0, opacity: 1 }}
                 transition={{ type: "timing", duration: 300 }}
                 style={[
-                    tw`px-4 py-4 border-t`,
+                    tw`px-4 pt-4 border-t`,
                     {
                         backgroundColor: colors.background.paper,
                         borderColor: colors.border.light,
+                        // On web: add extra bottom padding to clear the floating tab bar
+                        paddingBottom: Platform.OS === 'web' ? 88 : 16,
                     },
                 ]}
             >

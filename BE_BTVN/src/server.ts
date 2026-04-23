@@ -99,18 +99,18 @@ const startServer = async () => {
   try {
     await connectDatabase();
 
-    // Order matters — children must wait for their FK parents.
-    await User.sync();
-    await Category.sync();
-    await Brand.sync();
-    await Product.sync();
-    await Cart.sync();
-    await CartItem.sync();
-    await Order.sync();
-    await OrderItem.sync();
-    await Coupon.sync();
-    await Review.sync();
-    await Payment.sync();
+    // alter: true → adds missing columns to existing tables (safe for dev, no data loss)
+    await User.sync({ alter: true });
+    await Category.sync({ alter: true });
+    await Brand.sync({ alter: true });
+    await Product.sync({ alter: true });
+    await Cart.sync({ alter: true });
+    await CartItem.sync({ alter: true });
+    await Order.sync({ alter: true });
+    await OrderItem.sync({ alter: true });
+    await Coupon.sync({ alter: true });
+    await Review.sync({ alter: true });
+    await Payment.sync({ alter: true });
 
     await seedProducts();
 
