@@ -4,13 +4,15 @@ import { Text, IconButton, Surface } from 'react-native-paper';
 import tw from 'twrnc';
 import type { DiscountedProduct } from '../services/api/productApi';
 import { formatPrice, formatSold } from '../utils/formatters';
+import { getProductImage } from '../utils/image';
 
 interface GridProductCardProps {
     item: DiscountedProduct;
     onPress: () => void;
+    onAddToCart?: (item: DiscountedProduct, start: { x: number; y: number; image?: string | null }) => void;
 }
 
-const GridProductCard: React.FC<GridProductCardProps> = ({ item, onPress }) => (
+const GridProductCard: React.FC<GridProductCardProps> = ({ item, onPress, onAddToCart }) => (
     <TouchableOpacity
         onPress={onPress}
         activeOpacity={0.85}
@@ -20,17 +22,11 @@ const GridProductCard: React.FC<GridProductCardProps> = ({ item, onPress }) => (
             {/* Image */}
             <View style={tw`relative`}>
                 <View style={tw`h-36 bg-gray-100`}>
-                    {item.image ? (
-                        <Image
-                            source={{ uri: item.image }}
-                            style={tw`w-full h-full`}
-                            resizeMode="cover"
-                        />
-                    ) : (
-                        <View style={tw`flex-1 items-center justify-center`}>
-                            <IconButton icon="image-off" size={32} iconColor="#d1d5db" />
-                        </View>
-                    )}
+                    <Image
+                        source={{ uri: getProductImage(item.image) }}
+                        style={tw`w-full h-full`}
+                        resizeMode="cover"
+                    />
                 </View>
 
                 {/* Discount Badge - Prominent */}
@@ -70,6 +66,20 @@ const GridProductCard: React.FC<GridProductCardProps> = ({ item, onPress }) => (
                         <Text style={tw`text-[10px] text-gray-500`}>
                             {formatSold(item.sold)}
                         </Text>
+                    </View>
+                    <View style={tw`items-end mt-1`}>
+                        <TouchableOpacity
+                            style={tw`bg-orange-50 rounded-full`}
+                            onPress={(e) =>
+                                onAddToCart?.(item, {
+                                    x: e.nativeEvent.pageX,
+                                    y: e.nativeEvent.pageY,
+                                    image: item.image,
+                                })
+                            }
+                        >
+                            <IconButton icon="cart-plus" size={16} iconColor="#EE4D2D" style={tw`m-0`} />
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>

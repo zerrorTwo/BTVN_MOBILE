@@ -4,15 +4,18 @@ import { Text, IconButton, Surface } from 'react-native-paper';
 import tw from 'twrnc';
 import type { ProductListItem } from '../services/api/productApi';
 import { formatPrice, formatSold } from '../utils/formatters';
+import { getProductImage } from '../utils/image';
 
 interface HorizontalProductCardProps {
     item: ProductListItem;
     onPress: () => void;
+    onAddToCart?: (item: ProductListItem, start: { x: number; y: number; image?: string | null }) => void;
 }
 
 const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
     item,
     onPress,
+    onAddToCart,
 }) => {
     const discountPercent =
         item.originalPrice && item.originalPrice > item.price
@@ -27,17 +30,11 @@ const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
                 {/* Image */}
                 <View style={tw`relative `}>
                     <View style={tw`h-32  bg-gray-100`}>
-                        {item.image ? (
-                            <Image
-                                source={{ uri: item.image }}
-                                style={tw`w-full h-full`}
-                                resizeMode="cover"
-                            />
-                        ) : (
-                            <View style={tw`flex-1 items-center justify-center`}>
-                                <IconButton icon="image-off" size={32} iconColor="#d1d5db" />
-                            </View>
-                        )}
+                        <Image
+                            source={{ uri: getProductImage(item.image) }}
+                            style={tw`w-full h-full`}
+                            resizeMode="cover"
+                        />
                     </View>
 
                     {/* Discount Badge */}
@@ -80,12 +77,24 @@ const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
                     </View>
 
                     {/* Sold info - Fixed at bottom-right */}
-                    <View style={tw`absolute bottom-0 right-5 flex-row items-center`}>
+                    <View style={tw`absolute bottom-0 left-0 flex-row items-center`}>
                         <IconButton icon="fire" size={12} iconColor="#f97316" style={tw`m-0 p-0`} />
                         <Text style={tw`text-[10px] text-gray-500`}>
                             {formatSold(item.sold)}
                         </Text>
                     </View>
+                    <TouchableOpacity
+                        style={tw`absolute bottom-0 right-0 bg-orange-50 rounded-full`}
+                        onPress={(e) =>
+                            onAddToCart?.(item, {
+                                x: e.nativeEvent.pageX,
+                                y: e.nativeEvent.pageY,
+                                image: item.image,
+                            })
+                        }
+                    >
+                        <IconButton icon="cart-plus" size={16} iconColor="#EE4D2D" style={tw`m-0`} />
+                    </TouchableOpacity>
                 </View>
             </Surface>
         </TouchableOpacity>

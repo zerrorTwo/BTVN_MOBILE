@@ -1,14 +1,21 @@
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { View, FlatList, TouchableOpacity, Image, RefreshControl } from 'react-native';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { View, FlatList, TouchableOpacity, Image, RefreshControl, Alert } from 'react-native';
 import { Text, Searchbar, Chip, Card, ActivityIndicator, IconButton, Menu, Divider } from 'react-native-paper';
 import tw from 'twrnc';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useSelector } from 'react-redux';
 import {
     useGetProductsQuery,
     useGetCategoriesQuery,
     ProductListItem,
     ProductQueryParams,
 } from '../services/api/productApi';
+import { useAddToCartMutation } from '../services/api/cartApi';
 import Layout from '../components/Layout';
+import type { RootState } from '../store';
+import { useFlyToCart } from '../hooks/useFlyToCart';
+import { getProductImage } from '../utils/image';
 
 const SORT_OPTIONS = [
     { label: 'Mới nhất', value: 'createdAt', order: 'desc' as const },
@@ -17,8 +24,10 @@ const SORT_OPTIONS = [
     { label: 'Bán chạy', value: 'sold', order: 'desc' as const },
     { label: 'Đánh giá cao', value: 'rating', order: 'desc' as const },
 ];
+const SEARCH_DEBOUNCE_MS = 400;
 
 export default function SearchScreen({ navigation, route }: any) {
+    const { user } = useSelector((state: RootState) => state.auth);
     const [searchText, setSearchText] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -26,6 +35,8 @@ export default function SearchScreen({ navigation, route }: any) {
     const [selectedSort, setSelectedSort] = useState(0);
     const [page, setPage] = useState(1);
     const [accumulatedProducts, setAccumulatedProducts] = useState<ProductListItem[]>([]);
+    const pendingAddToCartIds = React.useRef<Set<number>>(new Set());
+    const lastAddToCartAt = React.useRef<Record<number, number>>({});
 
     useEffect(() => {
         const categoryId = route?.params?.categoryId;
@@ -35,6 +46,18 @@ export default function SearchScreen({ navigation, route }: any) {
             setAccumulatedProducts([]);
         }
     }, [route?.params?.categoryId]);
+
+    useEffect(() => {
+        const sortBy = route?.params?.sortBy;
+        if (!sortBy) return;
+
+        const sortIndex = SORT_OPTIONS.findIndex(option => option.value === sortBy);
+        if (sortIndex >= 0) {
+            setSelectedSort(sortIndex);
+            setPage(1);
+            setAccumulatedProducts([]);
+        }
+    }, [route?.params?.sortBy]);
 
     const queryParams: ProductQueryParams = {
         page,
@@ -47,6 +70,8 @@ export default function SearchScreen({ navigation, route }: any) {
 
     const { data: productsData, isLoading, isFetching, refetch } = useGetProductsQuery(queryParams);
     const { data: categoriesData } = useGetCategoriesQuery();
+    const [addToCart] = useAddToCartMutation();
+    const { triggerFlyToCart, FlyToCartOverlay } = useFlyToCart();
 
     useEffect(() => {
         if (productsData?.data?.products) {
@@ -72,11 +97,26 @@ export default function SearchScreen({ navigation, route }: any) {
         return accumulatedProducts;
     }, [accumulatedProducts, productsData, page]);
 
-    const handleSearch = useCallback(() => {
-        setSearchQuery(searchText);
+    useEffect(() => {
+        if (searchText === searchQuery) return;
+
+        const debounceTimer = setTimeout(() => {
+            setSearchQuery(searchText);
+            setPage(1);
+            setAccumulatedProducts([]);
+        }, SEARCH_DEBOUNCE_MS);
+
+        return () => clearTimeout(debounceTimer);
+    }, [searchText, searchQuery]);
+
+    const handleSearch = useCallback((value?: string) => {
+        const nextQuery = value ?? searchText;
+        setSearchText(nextQuery);
+        if (nextQuery === searchQuery) return;
+        setSearchQuery(nextQuery);
         setPage(1);
         setAccumulatedProducts([]);
-    }, [searchText]);
+    }, [searchText, searchQuery]);
 
     const handleCategorySelect = useCallback((categoryId: number | null) => {
         setSelectedCategory(categoryId);
@@ -105,6 +145,40 @@ export default function SearchScreen({ navigation, route }: any) {
         }).format(price);
     };
 
+    const handleQuickAddToCart = useCallback(async (productId: number) => {
+        const now = Date.now();
+        const lastAt = lastAddToCartAt.current[productId] || 0;
+        if (pendingAddToCartIds.current.has(productId) || now - lastAt < 900) {
+            return;
+        }
+
+        if (!user) {
+            navigation.navigate('Login');
+            return;
+        }
+
+        pendingAddToCartIds.current.add(productId);
+        lastAddToCartAt.current[productId] = now;
+        try {
+            await addToCart({ productId, quantity: 1 }).unwrap();
+        } catch (error: any) {
+            Alert.alert('Lỗi', error.data?.message || 'Không thể thêm vào giỏ hàng');
+        } finally {
+            pendingAddToCartIds.current.delete(productId);
+        }
+    }, [addToCart, navigation, user]);
+
+    const handleQuickAddToCartWithFly = useCallback(
+        async (
+            productId: number,
+            start: { x: number; y: number; image?: string | null },
+        ) => {
+            triggerFlyToCart(start);
+            await handleQuickAddToCart(productId);
+        },
+        [handleQuickAddToCart, triggerFlyToCart],
+    );
+
     const renderProductItem = ({ item }: { item: ProductListItem }) => (
         <TouchableOpacity
             style={tw`w-1/2 p-1`}
@@ -112,7 +186,7 @@ export default function SearchScreen({ navigation, route }: any) {
         >
             <Card style={tw`bg-white rounded-xl`} elevation={2}>
                 <Image
-                    source={{ uri: item.image || 'https://via.placeholder.com/200?text=No+Image' }}
+                    source={{ uri: getProductImage(item.image) }}
                     style={tw`w-full h-40 rounded-t-xl`}
                     resizeMode="cover"
                 />
@@ -120,15 +194,22 @@ export default function SearchScreen({ navigation, route }: any) {
                     <Text numberOfLines={2} style={tw`text-gray-800 font-medium text-sm h-10`}>
                         {item.name}
                     </Text>
-                    <View style={tw`flex-row items-center mt-1`}>
+                    <View style={tw`mt-0.5`}>
                         <Text style={tw`text-red-600 font-bold text-base`}>
                             {formatPrice(item.price)}
                         </Text>
-                        {item.originalPrice && item.originalPrice > item.price && (
-                            <Text style={tw`text-gray-400 text-xs line-through ml-2`}>
-                                {formatPrice(item.originalPrice)}
-                            </Text>
-                        )}
+                        <Text
+                            style={[
+                                tw`text-gray-400 text-xs mt-0.5`,
+                                item.originalPrice && item.originalPrice > item.price
+                                    ? tw`line-through`
+                                    : tw`opacity-0`,
+                            ]}
+                        >
+                            {item.originalPrice && item.originalPrice > item.price
+                                ? formatPrice(item.originalPrice)
+                                : '0'}
+                        </Text>
                     </View>
                     <View style={tw`flex-row items-center justify-between mt-2`}>
                         <View style={tw`flex-row items-center`}>
@@ -140,6 +221,21 @@ export default function SearchScreen({ navigation, route }: any) {
                         <Text style={tw`text-gray-400 text-xs`}>
                             Đã bán {item.sold}
                         </Text>
+                    </View>
+                    <View style={tw`items-end mt-1`}>
+                        <IconButton
+                            icon="cart-plus"
+                            size={20}
+                            iconColor="#EE4D2D"
+                            style={tw`m-0 bg-orange-50`}
+                            onPress={(e) =>
+                                handleQuickAddToCartWithFly(item.id, {
+                                    x: e.nativeEvent.pageX,
+                                    y: e.nativeEvent.pageY,
+                                    image: item.image,
+                                })
+                            }
+                        />
                     </View>
                 </Card.Content>
             </Card>
@@ -176,14 +272,15 @@ export default function SearchScreen({ navigation, route }: any) {
 
     return (
         <Layout>
-            <View style={tw`flex-1 bg-gray-100`}>
+            <SafeAreaView style={tw`flex-1 bg-[#EE4D2D]`} edges={['top']}>
+                <StatusBar style="light" backgroundColor="#EE4D2D" />
                 {/* Search and Filters Header - Fixed at top to prevent focus loss */}
-                <View style={tw`bg-gray-100 pb-2`}>
+                <View style={tw`bg-[#EE4D2D] px-1 pb-2`}>
                     <Searchbar
                         placeholder="Tìm kiếm sản phẩm..."
                         onChangeText={setSearchText}
-                        onIconPress={handleSearch}
-                        onSubmitEditing={handleSearch}
+                        onIconPress={() => handleSearch()}
+                        onSubmitEditing={() => handleSearch()}
                         value={searchText}
                         style={tw`bg-white rounded-xl mx-4 mt-4`}
                         iconColor="#EE4D2D"
@@ -199,8 +296,8 @@ export default function SearchScreen({ navigation, route }: any) {
                             <Chip
                                 selected={selectedCategory === item.id}
                                 onPress={() => handleCategorySelect(item.id)}
-                                style={tw`mr-2 ${selectedCategory === item.id ? 'bg-[#EE4D2D]' : 'bg-white'}`}
-                                textStyle={tw`${selectedCategory === item.id ? 'text-white' : 'text-gray-700'}`}
+                                style={tw`mr-2 ${selectedCategory === item.id ? 'bg-white' : 'bg-white/20'}`}
+                                textStyle={tw`${selectedCategory === item.id ? 'text-[#EE4D2D]' : 'text-white'}`}
                             >
                                 {item.name}
                             </Chip>
@@ -208,7 +305,7 @@ export default function SearchScreen({ navigation, route }: any) {
                     />
 
                     <View style={tw`flex-row items-center justify-between px-4 pb-2`}>
-                        <Text style={tw`text-gray-500 text-sm`}>
+                        <Text style={tw`text-white text-sm`}>
                             {productsData?.data?.pagination?.total || 0} sản phẩm
                         </Text>
                         <Menu
@@ -236,7 +333,7 @@ export default function SearchScreen({ navigation, route }: any) {
                             ))}
                         </Menu>
                     </View>
-                    <Divider />
+                    <Divider style={tw`bg-white/30`} />
                 </View>
 
                 <FlatList
@@ -246,7 +343,8 @@ export default function SearchScreen({ navigation, route }: any) {
                     numColumns={2}
                     ListEmptyComponent={renderEmpty}
                     ListFooterComponent={renderFooter}
-                    contentContainerStyle={tw`pb-20 px-2`}
+                    contentContainerStyle={tw`pb-20 px-2 pt-3`}
+                    style={tw`flex-1 bg-gray-100`}
                     showsVerticalScrollIndicator={false}
                     refreshControl={
                         <RefreshControl
@@ -263,7 +361,8 @@ export default function SearchScreen({ navigation, route }: any) {
                     }}
                     onEndReachedThreshold={0.3}
                 />
-            </View>
+                {FlyToCartOverlay}
+            </SafeAreaView>
         </Layout>
     );
 }

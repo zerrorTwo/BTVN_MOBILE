@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Image, TouchableOpacity, FlatList, Dimensions, Alert, DeviceEventEmitter } from 'react-native';
+import { View, ScrollView, Image, TouchableOpacity, FlatList, Dimensions, DeviceEventEmitter } from 'react-native';
 import { Text, Button, Chip, Divider, ActivityIndicator, IconButton, Snackbar } from 'react-native-paper';
 import tw from 'twrnc';
 import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGetProductByIdQuery } from '../services/api/productApi';
 import { useAddToCartMutation } from '../services/api/cartApi';
 import Layout from '../components/Layout';
@@ -19,6 +21,8 @@ const COMPARE_KEY = 'compareProductIds';
 
 export default function ProductDetailScreen({ route, navigation }: Props) {
     const { productId } = route.params;
+    const insets = useSafeAreaInsets();
+    const [showCompactHeader, setShowCompactHeader] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [isFavorite, setIsFavorite] = useState(false);
@@ -107,20 +111,6 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
         setSnackMessage(`Đã thêm ${product?.name} vào so sánh`);
     };
 
-    const handleBuyNow = async () => {
-        if (!user) {
-            navigation.navigate('Login');
-            return;
-        }
-
-        try {
-            await addToCart({ productId, quantity }).unwrap();
-            navigation.navigate('Checkout');
-        } catch (error: any) {
-            Alert.alert('Lỗi', error.data?.message || 'Không thể thêm vào giỏ hàng');
-        }
-    };
-
     if (isLoading) {
         return (
             <Layout>
@@ -156,7 +146,15 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
 
     return (
         <Layout>
-            <ScrollView style={tw`flex-1 bg-gray-100`}>
+            <StatusBar style="light" />
+            <ScrollView
+                style={tw`flex-1 bg-gray-100`}
+                onScroll={(event) => {
+                    const offsetY = event.nativeEvent.contentOffset.y;
+                    setShowCompactHeader(offsetY > 120);
+                }}
+                scrollEventThrottle={16}
+            >
                 {/* Image Gallery */}
                 <View style={tw`bg-white`}>
                     <FlatList
@@ -171,7 +169,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                         renderItem={({ item }) => (
                             <Image
                                 source={{ uri: item }}
-                                style={{ width: SCREEN_WIDTH, height: 350 }}
+                                style={{ width: SCREEN_WIDTH, height: 260 }}
                                 resizeMode="cover"
                             />
                         )}
@@ -193,7 +191,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
 
                     {/* Discount Badge */}
                     {discount > 0 && (
-                        <View style={tw`absolute top-4 left-4 bg-red-500 px-3 py-1 rounded-lg`}>
+                        <View style={tw`absolute left-4 bottom-4 bg-red-500 px-3 py-1 rounded-lg`}>
                             <Text style={tw`text-white font-bold`}>-{discount}%</Text>
                         </View>
                     )}
@@ -277,6 +275,43 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                 <View style={tw`h-24`} />
             </ScrollView>
 
+            <View
+                style={[
+                    tw`absolute left-0 right-0 flex-row items-center justify-between px-2`,
+                    {
+                        top: 0,
+                        paddingTop: insets.top + 4,
+                        paddingBottom: 8,
+                        backgroundColor: showCompactHeader ? '#EE4D2D' : 'transparent',
+                    },
+                ]}
+            >
+                <IconButton
+                    icon="arrow-left"
+                    size={22}
+                    iconColor="#FFFFFF"
+                    style={[
+                        tw`m-0`,
+                        showCompactHeader
+                            ? { backgroundColor: "rgba(0,0,0,0.16)" }
+                            : { backgroundColor: "rgba(0,0,0,0.28)" },
+                    ]}
+                    onPress={() => navigation.goBack()}
+                />
+                {showCompactHeader ? (
+                    <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={tw`text-white text-base font-semibold text-center flex-1 mx-2`}
+                    >
+                        {product.name}
+                    </Text>
+                ) : (
+                    <View style={tw`flex-1`} />
+                )}
+                <View style={tw`w-[40px]`} />
+            </View>
+
             {/* Bottom Action Bar */}
             <View style={tw`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 flex-row items-center`}>
                 <IconButton
@@ -294,15 +329,15 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     onPress={addToCompare}
                 />
                 <Button
-                    mode="contained"
-                    onPress={handleBuyNow}
+                    mode="outlined"
+                    onPress={handleAddToCart}
                     loading={isAddingToCart}
                     disabled={isAddingToCart}
+                    icon="cart-plus"
                     style={tw`flex-1 rounded-xl`}
-                    buttonColor="#EE4D2D"
-                    contentStyle={tw`py-2`}
+                    textColor="#EE4D2D"
                 >
-                    Mua ngay • {formatPrice(Number(product.price) * quantity)}
+                    Thêm giỏ • {formatPrice(Number(product.price) * quantity)}
                 </Button>
             </View>
 

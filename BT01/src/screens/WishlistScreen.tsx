@@ -5,6 +5,8 @@ import { Button, Card, IconButton, Text } from "react-native-paper";
 import tw from "twrnc";
 import Layout from "../components/Layout";
 import { useGetProductsQuery } from "../services/api/productApi";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
 const WISHLIST_KEY = "wishlistProductIds";
 
@@ -53,7 +55,9 @@ export default function WishlistScreen({ navigation }: any) {
 
   return (
     <Layout>
-      <View style={tw`flex-1 bg-gray-50 px-4 pt-3`}>
+      <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["top"]}>
+        <StatusBar style="dark" />
+        <View style={tw`flex-1 bg-gray-50 px-4 pt-3`}>
         {isLoading ? (
           <View style={tw`flex-1 items-center justify-center`}>
             <Text>Đang tải danh sách yêu thích...</Text>
@@ -106,7 +110,8 @@ export default function WishlistScreen({ navigation }: any) {
             )}
           />
         )}
-      </View>
+        </View>
+      </SafeAreaView>
     </Layout>
   );
 }

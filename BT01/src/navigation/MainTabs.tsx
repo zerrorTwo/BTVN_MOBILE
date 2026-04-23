@@ -13,12 +13,14 @@ import ProfileScreen from '../screens/ProfileScreen';
 import SearchScreen from '../screens/SearchScreen';
 import { useGetCartQuery } from '../services/api/cartApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabs() {
     const { isAuthenticated } = useSelector((state: RootState) => state.auth);
     const [wishlistCount, setWishlistCount] = React.useState<number>(0);
+    const insets = useSafeAreaInsets();
 
     // Fetch data for badges
     const { data: cartData } = useGetCartQuery(undefined, { skip: !isAuthenticated });
@@ -77,13 +79,13 @@ export default function MainTabs() {
                 tabBarInactiveTintColor: colors.text.secondary,
                 tabBarStyle: {
                     position: 'absolute',
-                    bottom: 0,
+                    bottom: insets.bottom,
                     left: 20,
                     right: 20,
-                    height: 80,
+                    height: 38 + insets.bottom,
                     borderRadius: 16,
                     backgroundColor: colors.background.paper,
-                    paddingBottom: 0,
+                    paddingBottom: insets.bottom,
                     paddingTop: 8,
                     borderTopWidth: 0,
                     ...shadows.lg,

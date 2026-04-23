@@ -21,7 +21,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
     onSearchPress,
     onLoginPress,
 }) => (
-    <View style={tw`bg-[#EE4D2D] pt-6 pb-12 px-5`}>
+    <View style={tw`bg-[#EE4D2D] pb-5 px-5`}>
         <View style={tw`flex-row justify-between items-center`}>
             <View style={tw`flex-1`}>
                 <Text style={tw`text-[#FFB8A8] text-sm font-medium uppercase tracking-wider`}>
@@ -64,7 +64,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
         </View>
 
         <TouchableOpacity
-            style={tw`mt-5 bg-white rounded-2xl px-4 py-3.5 flex-row items-center shadow-lg`}
+            style={tw`mt-3 bg-white rounded-2xl px-4 py-3.5 flex-row items-center shadow-lg`}
             onPress={onSearchPress}
             activeOpacity={0.9}
         >
