@@ -6,17 +6,22 @@ import tw from 'twrnc';
 import { logout } from '../store/authSlice';
 import Layout from '../components/Layout';
 import type { RootState } from '../store';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 export default function ProfileScreen({ navigation }: any) {
     const { user } = useSelector((state: RootState) => state.auth);
+    const insets = useSafeAreaInsets();
     const dispatch = useDispatch();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [showCompactHeader, setShowCompactHeader] = useState(false);
 
     const handleLogout = () => {
         if (Platform.OS === 'web') {
             if (showLogoutConfirm) {
                 dispatch(logout());
                 setShowLogoutConfirm(false);
+                navigation.navigate('Login');
             } else {
                 setShowLogoutConfirm(true);
             }
@@ -32,6 +37,7 @@ export default function ProfileScreen({ navigation }: any) {
                         style: 'destructive',
                         onPress: () => {
                             dispatch(logout());
+                            navigation.navigate('Login');
                         },
                     },
                 ]
@@ -42,29 +48,35 @@ export default function ProfileScreen({ navigation }: any) {
     if (!user) {
         return (
             <Layout>
-                <View style={tw`flex-1 justify-center items-center bg-gray-100 px-6`}>
-                    <Card style={tw`bg-white rounded-2xl w-full max-w-sm`} elevation={4}>
-                        <Card.Content style={tw`items-center py-8 px-6`}>
-                            <List.Icon icon="account-lock" color="#0B5ED7" style={tw`mb-2`} />
-                            <Text style={tw`text-xl font-bold text-gray-800 mb-2 text-center`}>
-                                Yêu cầu đăng nhập
-                            </Text>
-                            <Text style={tw`text-gray-500 text-center mb-6`}>
-                                Bạn cần đăng nhập để xem thông tin cá nhân
-                            </Text>
-                            <Button
-                                mode="contained"
-                                onPress={() => navigation.navigate('Login')}
-                                style={tw`rounded-xl w-full`}
-                                buttonColor="#0B5ED7"
-                                contentStyle={tw`py-1`}
-                                icon="login"
-                            >
-                                Đăng nhập
-                            </Button>
-                        </Card.Content>
-                    </Card>
-                </View>
+                <SafeAreaView style={tw`flex-1 bg-gray-100`} edges={['top']}>
+                    <StatusBar style="light" backgroundColor="#0B5ED7" />
+                    <View style={tw`bg-[#0B5ED7] py-3 px-4`}>
+                        <Text style={tw`text-white text-lg font-bold text-center`}>Cá nhân</Text>
+                    </View>
+                    <View style={tw`flex-1 justify-center items-center bg-gray-100 px-6`}>
+                        <Card style={tw`bg-white rounded-2xl w-full max-w-sm`} elevation={4}>
+                            <Card.Content style={tw`items-center py-8 px-6`}>
+                                <List.Icon icon="account-lock" color="#0B5ED7" style={tw`mb-2`} />
+                                <Text style={tw`text-xl font-bold text-gray-800 mb-2 text-center`}>
+                                    Yêu cầu đăng nhập
+                                </Text>
+                                <Text style={tw`text-gray-500 text-center mb-6`}>
+                                    Bạn cần đăng nhập để xem thông tin cá nhân
+                                </Text>
+                                <Button
+                                    mode="contained"
+                                    onPress={() => navigation.navigate('Login')}
+                                    style={tw`rounded-xl w-full`}
+                                    buttonColor="#0B5ED7"
+                                    contentStyle={tw`py-1`}
+                                    icon="login"
+                                >
+                                    Đăng nhập
+                                </Button>
+                            </Card.Content>
+                        </Card>
+                    </View>
+                </SafeAreaView>
             </Layout>
         );
     }
@@ -130,10 +142,20 @@ export default function ProfileScreen({ navigation }: any) {
     ];
 
     return (
-        <Layout>
-            <ScrollView style={tw`flex-1 bg-gray-100`} contentContainerStyle={tw`pb-28`}>
-                {/* Profile Header */}
-                <View style={tw`bg-[#0B5ED7] pt-8 pb-16 px-6 items-center`}>
+        <Layout style={tw`bg-[#0B5ED7]`}>
+            <SafeAreaView style={tw`flex-1 bg-[#0B5ED7]`} edges={['top']}>
+                <StatusBar style="light" backgroundColor="#0B5ED7" />
+                <ScrollView
+                    style={tw`flex-1 bg-[#0B5ED7]`}
+                    contentContainerStyle={tw`pb-28 bg-gray-100`}
+                    onScroll={(event) => {
+                        const offsetY = event.nativeEvent.contentOffset.y;
+                        setShowCompactHeader(offsetY > 120);
+                    }}
+                    scrollEventThrottle={16}
+                >
+                    {/* Profile Header */}
+                    <View style={tw`bg-[#0B5ED7] pt-4 pb-14 px-6 items-center`}>
                     <TouchableOpacity
                         style={tw`mb-4`}
                         onPress={() => navigation.navigate('EditProfile')}
@@ -166,10 +188,10 @@ export default function ProfileScreen({ navigation }: any) {
                             <Text style={tw`text-green-400 text-sm ml-1`}>Đã xác thực</Text>
                         </View>
                     )}
-                </View>
+                    </View>
 
-                {/* Profile Content */}
-                <View style={tw`-mt-8 px-4`}>
+                    {/* Profile Content */}
+                    <View style={tw`-mt-8 px-4`}>
                     {/* Info Card */}
                     <Card style={tw`bg-white rounded-2xl mb-4`} elevation={4}>
                         <Card.Content style={tw`p-4`}>
@@ -269,8 +291,22 @@ export default function ProfileScreen({ navigation }: any) {
                     <Text style={tw`text-center text-gray-400 text-xs mt-4`}>
                         Phiên bản 1.0.0
                     </Text>
-                </View>
-            </ScrollView>
+                    </View>
+                </ScrollView>
+                {showCompactHeader && (
+                    <View
+                        style={[
+                            tw`absolute left-0 right-0 bg-[#0B5ED7] px-4 pb-3`,
+                            { top: 0, paddingTop: insets.top + 2 },
+                        ]}
+                        pointerEvents="none"
+                    >
+                        <Text style={tw`text-white text-lg font-bold text-center`}>
+                            Cá nhân
+                        </Text>
+                    </View>
+                )}
+            </SafeAreaView>
         </Layout>
     );
 }

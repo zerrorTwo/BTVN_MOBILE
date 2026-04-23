@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, ActivityIndicator, Snackbar, Portal, Modal } from "react-native-paper";
 import { useSelector } from 'react-redux';
 import tw from "twrnc";
+import { StatusBar } from "expo-status-bar";
 import { CartItem } from "../components/CartItem";
 import {
     useGetCartQuery,
@@ -112,7 +113,8 @@ export const CartScreen = ({ navigation }: any) => {
 
     if (!user) {
         return (
-            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-6`} edges={["bottom"]}>
+            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-6`} edges={["top", "bottom"]}>
+                <StatusBar style="dark" />
                 <Text style={tw`text-6xl mb-4`}>🔒</Text>
                 <Text style={tw`text-xl font-bold text-gray-800 text-center`}>
                     Đăng nhập để xem giỏ hàng
@@ -134,9 +136,10 @@ export const CartScreen = ({ navigation }: any) => {
 
     if (isLoading) {
         return (
-            <View style={tw`flex-1 justify-center items-center bg-gray-50`}>
+            <SafeAreaView style={tw`flex-1 justify-center items-center bg-gray-50`} edges={["top", "bottom"]}>
+                <StatusBar style="dark" />
                 <ActivityIndicator size="large" color="#0B5ED7" />
-            </View>
+            </SafeAreaView>
         );
     }
 
@@ -145,7 +148,8 @@ export const CartScreen = ({ navigation }: any) => {
 
     if (isEmpty) {
         return (
-            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-6`} edges={["bottom"]}>
+            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-6`} edges={["top", "bottom"]}>
+                <StatusBar style="dark" />
                 <Text style={tw`text-6xl mb-4`}>🛒</Text>
                 <Text style={tw`text-xl font-bold text-gray-800 text-center`}>
                     Giỏ hàng trống
@@ -155,7 +159,7 @@ export const CartScreen = ({ navigation }: any) => {
                 </Text>
                 <Button
                     mode="contained"
-                    onPress={() => navigation.navigate("HomeTab")}
+                    onPress={() => navigation.navigate("Home", { screen: "HomeTab" })}
                     style={tw`mt-6 rounded-xl`}
                     buttonColor="#0B5ED7"
                 >
@@ -166,7 +170,8 @@ export const CartScreen = ({ navigation }: any) => {
     }
 
     return (
-        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["bottom"]}>
+        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["top", "bottom"]}>
+            <StatusBar style="dark" />
             <View style={tw`bg-white px-4 py-3 border-b border-gray-200`}>
                 <View style={tw`flex-row justify-between items-center`}>
                     <Text style={tw`text-lg font-bold`}>

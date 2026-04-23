@@ -7,7 +7,8 @@ import {
     Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, ActivityIndicator, RadioButton } from "react-native-paper";
+import { Button, ActivityIndicator, RadioButton, IconButton } from "react-native-paper";
+import { StatusBar } from "expo-status-bar";
 import tw from "twrnc";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
@@ -87,7 +88,18 @@ export const CheckoutScreen = ({ navigation }: any) => {
     const total = (cart?.subtotal || 0) + shippingFee;
 
     return (
-        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["bottom"]}>
+        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["top", "bottom"]}>
+            <StatusBar style="dark" />
+            <View style={tw`flex-row items-center justify-between px-2 py-2 bg-white border-b border-gray-100`}>
+                <IconButton
+                    icon="arrow-left"
+                    size={22}
+                    onPress={() => navigation.goBack()}
+                    iconColor="#111827"
+                />
+                <Text style={tw`text-lg font-semibold text-gray-900 text-center`}>Đặt hàng</Text>
+                <View style={tw`w-[40px]`} />
+            </View>
             <ScrollView style={tw`flex-1`}>
                 {/* Shipping Address Section */}
                 <View style={tw`bg-white p-4 mb-2`}>

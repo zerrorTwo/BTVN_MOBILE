@@ -13,6 +13,7 @@ import { TextInput, Button, Snackbar, HelperText, ActivityIndicator } from 'reac
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { StatusBar } from 'expo-status-bar';
 import { useLoginMutation } from '../services/api/authApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
@@ -79,6 +80,7 @@ export default function LoginScreen({ navigation }: Props) {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
+            <StatusBar style="light" backgroundColor="#0B5ED7" />
             <LinearGradient colors={gradients.primary as any} style={styles.gradient}>
                 <KeyboardAvoidingView
                     style={styles.keyboardView}
@@ -222,6 +224,7 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#0B5ED7',
     },
     gradient: {
         flex: 1,
