@@ -17,6 +17,15 @@ export interface ProductListItem {
   sold: number;
   categoryId: number | null;
   categoryName?: string;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
+  brand?: {
+    id: number;
+    name: string;
+    imageUrl: string | null;
+  } | null;
 }
 
 export interface DiscountedProduct extends ProductListItem {

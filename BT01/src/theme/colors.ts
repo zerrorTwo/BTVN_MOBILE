@@ -1,12 +1,12 @@
 // Color System with Gradients
 export const colors = {
-  // Primary Shopee Orange
+  // Primary Blue
   primary: {
-    main: "#EE4D2D",
-    light: "#FF6B4A",
-    dark: "#D73211",
-    gradient: ["#FF6B4A", "#EE4D2D"],
-    vibrant: ["#FF8A65", "#FF5722", "#EE4D2D"],
+    main: "#0B5ED7",
+    light: "#3B82F6",
+    dark: "#0A4AA3",
+    gradient: ["#3B82F6", "#0B5ED7"],
+    vibrant: ["#60A5FA", "#2563EB", "#0B5ED7"],
   },
 
   // Success
@@ -47,7 +47,7 @@ export const colors = {
     paper: "#FFFFFF",
     dark: "#1A1A1A",
     gradient: ["#FAFAFA", "#F5F5F5"],
-    primaryGradient: ["#FFE5E0", "#FFF5F3"],
+    primaryGradient: ["#EAF3FF", "#F5F9FF"],
     darkGradient: ["#2C2C2C", "#1A1A1A"],
   },
 
@@ -96,8 +96,8 @@ export const colors = {
 
 // Gradient presets
 export const gradients = {
-  primary: ["#FF8A65", "#FF5722", "#EE4D2D"],
-  primarySimple: ["#FF6B4A", "#EE4D2D"],
+  primary: ["#60A5FA", "#2563EB", "#0B5ED7"],
+  primarySimple: ["#3B82F6", "#0B5ED7"],
   success: ["#4DB6AC", "#26AA99"],
   warning: ["#FFB74D", "#FF9800"],
   error: ["#EF5350", "#F44336"],

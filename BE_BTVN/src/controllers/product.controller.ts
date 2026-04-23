@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Op } from "sequelize";
 import { Product, Category } from "../models/product.model";
+import Brand from "../models/brand.model";
 import {
   ProductListResponse,
   ProductDetailResponse,
@@ -24,6 +25,19 @@ const formatProductListItem = (product: Product): ProductListItem => ({
   sold: product.sold,
   categoryId: product.categoryId,
   categoryName: product.category?.name,
+  category: product.category
+    ? {
+        id: product.category.id,
+        name: product.category.name,
+      }
+    : null,
+  brand: (product as any).brand
+    ? {
+        id: (product as any).brand.id,
+        name: (product as any).brand.name,
+        imageUrl: (product as any).brand.imageUrl ?? null,
+      }
+    : null,
 });
 
 /**
@@ -100,6 +114,11 @@ export const getProducts = async (
           as: "category",
           attributes: ["id", "name"],
         },
+        {
+          model: Brand,
+          as: "brand",
+          attributes: ["id", "name", "imageUrl"],
+        },
       ],
       order: [[sortField as string, sortOrder === "asc" ? "ASC" : "DESC"]],
       limit: Number(limit),
@@ -150,6 +169,11 @@ export const getProductById = async (
           model: Category,
           as: "category",
           attributes: ["id", "name"],
+        },
+        {
+          model: Brand,
+          as: "brand",
+          attributes: ["id", "name", "imageUrl"],
         },
       ],
     });
@@ -243,6 +267,7 @@ export const getFeaturedProducts = async (
       where: { isActive: true },
       include: [
         { model: Category, as: "category", attributes: ["id", "name"] },
+        { model: Brand, as: "brand", attributes: ["id", "name", "imageUrl"] },
       ],
       order: [["rating", "DESC"]],
       limit,
@@ -252,6 +277,7 @@ export const getFeaturedProducts = async (
       where: { isActive: true },
       include: [
         { model: Category, as: "category", attributes: ["id", "name"] },
+        { model: Brand, as: "brand", attributes: ["id", "name", "imageUrl"] },
       ],
       order: [["sold", "DESC"]],
       limit,
@@ -261,6 +287,7 @@ export const getFeaturedProducts = async (
       where: { isActive: true },
       include: [
         { model: Category, as: "category", attributes: ["id", "name"] },
+        { model: Brand, as: "brand", attributes: ["id", "name", "imageUrl"] },
       ],
       order: [["createdAt", "DESC"]],
       limit,
@@ -301,6 +328,7 @@ export const getBestSellers = async (
       where: { isActive: true },
       include: [
         { model: Category, as: "category", attributes: ["id", "name"] },
+        { model: Brand, as: "brand", attributes: ["id", "name", "imageUrl"] },
       ],
       order: [["sold", "DESC"]],
       limit,
@@ -340,6 +368,7 @@ export const getDiscountedProducts = async (
       },
       include: [
         { model: Category, as: "category", attributes: ["id", "name"] },
+        { model: Brand, as: "brand", attributes: ["id", "name", "imageUrl"] },
       ],
     });
 

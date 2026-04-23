@@ -5,6 +5,7 @@ import sequelize from "../config/database";
 export interface CategoryAttributes {
   id?: number;
   name: string;
+  parentId?: number | null;
   description?: string | null;
   image?: string | null;
   isActive?: boolean;
@@ -21,6 +22,7 @@ export class Category
 {
   public id!: number;
   public name!: string;
+  public parentId!: number | null;
   public description!: string | null;
   public image!: string | null;
   public isActive!: boolean;
@@ -39,6 +41,14 @@ Category.init(
     name: {
       type: DataTypes.STRING(100),
       allowNull: false,
+    },
+    parentId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "categories",
+        key: "id",
+      },
     },
     description: {
       type: DataTypes.TEXT,
@@ -65,12 +75,15 @@ Category.init(
 export interface ProductAttributes {
   id?: number;
   name: string;
+  sku?: string;
   description?: string | null;
   price: number;
   originalPrice?: number | null;
   image?: string | null;
   images?: string | null; // JSON array of image URLs
   categoryId?: number | null;
+  brandId?: number | null;
+  attributes?: any | null;
   stock?: number;
   sold?: number;
   rating?: number;
@@ -86,12 +99,15 @@ export class Product
 {
   public id!: number;
   public name!: string;
+  public sku!: string;
   public description!: string | null;
   public price!: number;
   public originalPrice!: number | null;
   public image!: string | null;
   public images!: string | null;
   public categoryId!: number | null;
+  public brandId!: number | null;
+  public attributes!: any | null;
   public stock!: number;
   public sold!: number;
   public rating!: number;
@@ -102,6 +118,11 @@ export class Product
   public readonly updatedAt!: Date;
 
   public readonly category?: Category;
+  public readonly brand?: {
+    id: number;
+    name: string;
+    imageUrl: string | null;
+  };
 }
 
 Product.init(
@@ -114,6 +135,11 @@ Product.init(
     name: {
       type: DataTypes.STRING(255),
       allowNull: false,
+    },
+    sku: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      unique: true,
     },
     description: {
       type: DataTypes.TEXT,
@@ -143,6 +169,19 @@ Product.init(
         model: "categories",
         key: "id",
       },
+    },
+    brandId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: "brands",
+        key: "id",
+      },
+    },
+    attributes: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      comment: "JSON object for product specs",
     },
     stock: {
       type: DataTypes.INTEGER,

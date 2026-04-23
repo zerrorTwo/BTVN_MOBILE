@@ -81,7 +81,7 @@ const OrderCardComponent: React.FC<OrderCardProps> = ({ order, onPress }) => {
             <View style={tw`flex-row justify-between items-center pt-3 border-t border-gray-100`}>
                 <View>
                     <Text style={tw`text-xs text-gray-500`}>Tổng tiền</Text>
-                    <Text style={tw`text-base font-bold text-[#EE4D2D]`}>
+                    <Text style={tw`text-base font-bold text-[#0B5ED7]`}>
                         ₫{order.total.toLocaleString()}
                     </Text>
                 </View>

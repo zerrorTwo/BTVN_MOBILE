@@ -37,7 +37,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
         </View>
         {onSeeAll && (
             <TouchableOpacity onPress={onSeeAll} style={tw`flex-row items-center`}>
-                <Text style={tw`text-sm font-semibold text-[#EE4D2D]`}>Xem tất cả</Text>
+                <Text style={tw`text-sm font-semibold text-[#0B5ED7]`}>Xem tất cả</Text>
                 <IconButton
                     icon="chevron-right"
                     size={16}

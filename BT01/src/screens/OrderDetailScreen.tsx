@@ -62,7 +62,7 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
     if (isLoading) {
         return (
             <View style={tw`flex-1 justify-center items-center bg-gray-50`}>
-                <ActivityIndicator size="large" color="#EE4D2D" />
+                <ActivityIndicator size="large" color="#0B5ED7" />
             </View>
         );
     }
@@ -138,7 +138,7 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                                 <Text style={tw`text-xs text-gray-500 mt-1`}>
                                     x{item.quantity}
                                 </Text>
-                                <Text style={tw`text-base font-bold text-[#EE4D2D] mt-1`}>
+                                <Text style={tw`text-base font-bold text-[#0B5ED7] mt-1`}>
                                     ₫{item.unitPrice.toLocaleString()}
                                 </Text>
                             </View>
@@ -158,7 +158,7 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                     </View>
                     <View style={tw`flex-row justify-between py-2 border-t border-gray-200`}>
                         <Text style={tw`font-semibold`}>Tổng cộng</Text>
-                        <Text style={tw`text-xl font-bold text-[#EE4D2D]`}>
+                        <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
                             ₫{order.total.toLocaleString()}
                         </Text>
                     </View>
@@ -249,7 +249,7 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                             <Button
                                 mode="contained"
                                 onPress={() => navigation.navigate("Home")}
-                                style={tw`flex-1 bg-[#EE4D2D]`}
+                                style={tw`flex-1 bg-[#0B5ED7]`}
                             >
                                 Mua lại
                             </Button>

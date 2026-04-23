@@ -29,6 +29,7 @@ import WishlistScreen from '../screens/WishlistScreen';
 import CompareScreen from '../screens/CompareScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import OrderTrackingScreen from '../screens/OrderTrackingScreen';
+import AppSplashScreen from '../screens/AppSplashScreen';
 
 export type RootStackParamList = {
     Intro: undefined;
@@ -85,14 +86,15 @@ export default function AppNavigator() {
     }, [dispatch]);
 
     if (isLoading) {
-        return null;
+        return <AppSplashScreen />;
     }
 
     return (
         <NavigationContainer>
             <Stack.Navigator
                 screenOptions={{
-                    headerShown: false,
+                    headerShown: true,
+                    headerTitleAlign: 'center',
                 }}
             >
                 {/* Main App - Always Accessible (Guest or Authenticated) */}

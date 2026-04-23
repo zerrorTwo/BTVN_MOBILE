@@ -197,7 +197,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
                     </View>
                     <View style={tw`border-t border-gray-200 mt-2 pt-2 flex-row justify-between`}>
                         <Text style={tw`text-base font-semibold`}>Tổng cộng</Text>
-                        <Text style={tw`text-xl font-bold text-[#EE4D2D]`}>
+                        <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
                             ₫{total.toLocaleString()}
                         </Text>
                     </View>
@@ -208,7 +208,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
             <View style={tw`bg-white px-4 py-4 border-t border-gray-200`}>
                 <View style={tw`flex-row justify-between items-center mb-3`}>
                     <Text style={tw`text-gray-600`}>Tổng thanh toán</Text>
-                    <Text style={tw`text-xl font-bold text-[#EE4D2D]`}>
+                    <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
                         ₫{total.toLocaleString()}
                     </Text>
                 </View>
@@ -217,7 +217,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
                     onPress={handlePlaceOrder}
                     loading={isLoading}
                     disabled={isLoading}
-                    style={tw`bg-[#EE4D2D] py-1`}
+                    style={tw`bg-[#0B5ED7] py-1`}
                     labelStyle={tw`text-base font-semibold`}
                 >
                     Đặt hàng

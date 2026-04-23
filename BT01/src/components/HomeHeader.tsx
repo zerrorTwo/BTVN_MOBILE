@@ -21,10 +21,10 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
     onSearchPress,
     onLoginPress,
 }) => (
-    <View style={tw`bg-[#EE4D2D] pb-5 px-5`}>
+    <View style={tw`bg-[#0059c9] pt-6 pb-12 px-5`}>
         <View style={tw`flex-row justify-between items-center`}>
             <View style={tw`flex-1`}>
-                <Text style={tw`text-[#FFB8A8] text-sm font-medium uppercase tracking-wider`}>
+                <Text style={tw`text-blue-100 text-sm font-medium uppercase tracking-wider`}>
                     Xin chào 👋
                 </Text>
                 <Text style={tw`text-white text-2xl font-bold mt-1`}>
@@ -49,7 +49,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                             size={48}
                             label={getInitials(userName)}
                             style={tw`bg-white`}
-                            labelStyle={tw`text-[#EE4D2D] font-bold text-lg`}
+                            labelStyle={tw`text-[#0B5ED7] font-bold text-lg`}
                         />
                     </TouchableOpacity>
                 </View>
@@ -58,7 +58,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
                     style={tw`bg-white px-5 py-2.5 rounded-full`}
                     onPress={onLoginPress}
                 >
-                    <Text style={tw`text-[#EE4D2D] font-bold text-sm`}>Đăng nhập</Text>
+                    <Text style={tw`text-[#003b8f] font-bold text-sm`}>Đăng nhập</Text>
                 </TouchableOpacity>
             )}
         </View>
@@ -81,7 +81,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({
             <IconButton
                 icon="microphone-outline"
                 size={20}
-                iconColor="#EE4D2D"
+                iconColor="#0059c9"
                 style={tw`m-0 p-0`}
             />
         </TouchableOpacity>

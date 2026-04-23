@@ -246,7 +246,7 @@ export default function SearchScreen({ navigation, route }: any) {
         if (isLoading || isFetching) {
             return (
                 <View style={tw`items-center justify-center py-20`}>
-                    <ActivityIndicator size="large" color="#EE4D2D" />
+                    <ActivityIndicator size="large" color="#0B5ED7" />
                     <Text style={tw`text-gray-500 mt-4`}>Đang tải sản phẩm...</Text>
                 </View>
             );
@@ -264,7 +264,7 @@ export default function SearchScreen({ navigation, route }: any) {
         if (!isFetching || isLoading) return null;
         return (
             <View style={tw`py-4 items-center`}>
-                <ActivityIndicator size="small" color="#EE4D2D" />
+                <ActivityIndicator size="small" color="#0B5ED7" />
                 <Text style={tw`text-gray-400 text-xs mt-1`}>Đang tải thêm...</Text>
             </View>
         );
@@ -283,7 +283,7 @@ export default function SearchScreen({ navigation, route }: any) {
                         onSubmitEditing={() => handleSearch()}
                         value={searchText}
                         style={tw`bg-white rounded-xl mx-4 mt-4`}
-                        iconColor="#EE4D2D"
+                        iconColor="#0B5ED7"
                     />
 
                     <FlatList
@@ -296,8 +296,8 @@ export default function SearchScreen({ navigation, route }: any) {
                             <Chip
                                 selected={selectedCategory === item.id}
                                 onPress={() => handleCategorySelect(item.id)}
-                                style={tw`mr-2 ${selectedCategory === item.id ? 'bg-white' : 'bg-white/20'}`}
-                                textStyle={tw`${selectedCategory === item.id ? 'text-[#EE4D2D]' : 'text-white'}`}
+                                style={tw`mr-2 ${selectedCategory === item.id ? 'bg-[#0B5ED7]' : 'bg-white'}`}
+                                textStyle={tw`${selectedCategory === item.id ? 'text-white' : 'text-gray-700'}`}
                             >
                                 {item.name}
                             </Chip>
@@ -350,7 +350,7 @@ export default function SearchScreen({ navigation, route }: any) {
                         <RefreshControl
                             refreshing={isFetching && page === 1 && !isLoading}
                             onRefresh={handleRefresh}
-                            colors={['#EE4D2D']}
+                            colors={['#0B5ED7']}
                         />
                     }
                     onEndReached={() => {

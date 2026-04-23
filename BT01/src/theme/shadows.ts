@@ -59,7 +59,7 @@ export const shadows = {
 export const coloredShadows = {
   primary: Platform.select({
     ios: {
-      shadowColor: "#EE4D2D",
+      shadowColor: "#0B5ED7",
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
@@ -122,7 +122,7 @@ export const cardShadow = Platform.select({
 // Button shadows
 export const buttonShadow = Platform.select({
   ios: {
-    shadowColor: "#EE4D2D",
+    shadowColor: "#0B5ED7",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 12,

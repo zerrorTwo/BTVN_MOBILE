@@ -72,7 +72,7 @@ export default function WishlistScreen({ navigation }: any) {
             </Text>
             <Button
               mode="contained"
-              buttonColor="#EE4D2D"
+              buttonColor="#0B5ED7"
               onPress={() => navigation.navigate("HomeTab")}
             >
               Khám phá sản phẩm
@@ -100,7 +100,7 @@ export default function WishlistScreen({ navigation }: any) {
                     right={() => (
                       <IconButton
                         icon="heart"
-                        iconColor="#EE4D2D"
+                        iconColor="#0B5ED7"
                         onPress={() => removeFromWishlist(item.id)}
                       />
                     )}

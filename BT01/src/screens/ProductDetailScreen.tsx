@@ -115,7 +115,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
         return (
             <Layout>
                 <View style={tw`flex-1 items-center justify-center bg-gray-100`}>
-                    <ActivityIndicator size="large" color="#EE4D2D" />
+                    <ActivityIndicator size="large" color="#0B5ED7" />
                     <Text style={tw`text-gray-500 mt-4`}>Đang tải sản phẩm...</Text>
                 </View>
             </Layout>
@@ -135,7 +135,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                         mode="contained"
                         onPress={() => navigation.goBack()}
                         style={tw`mt-6 rounded-xl`}
-                        buttonColor="#EE4D2D"
+                        buttonColor="#0B5ED7"
                     >
                         Quay lại
                     </Button>
@@ -182,7 +182,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                             {images.map((_, index) => (
                                 <View
                                     key={index}
-                                    style={tw`w-2 h-2 rounded-full mx-1 ${index === currentImageIndex ? 'bg-[#EE4D2D]' : 'bg-gray-300'
+                                    style={tw`w-2 h-2 rounded-full mx-1 ${index === currentImageIndex ? 'bg-[#0B5ED7]' : 'bg-gray-300'
                                         }`}
                                 />
                             ))}
@@ -229,12 +229,27 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     </View>
 
                     {/* Category */}
-                    {product.categoryName && (
+                    {(product.category?.name || product.categoryName) && (
                         <View style={tw`flex-row items-center mt-3`}>
                             <Text style={tw`text-gray-500`}>Danh mục: </Text>
-                            <Chip compact style={tw`bg-orange-50`} textStyle={tw`text-[#EE4D2D] text-xs`}>
-                                {product.categoryName}
+                            <Chip compact style={tw`bg-blue-50`} textStyle={tw`text-[#0B5ED7] text-xs`}>
+                                {product.category?.name || product.categoryName}
                             </Chip>
+                        </View>
+                    )}
+
+                    {/* Brand */}
+                    {product.brand?.name && (
+                        <View style={tw`flex-row items-center mt-3`}>
+                            <Text style={tw`text-gray-500 mr-2`}>Thương hiệu:</Text>
+                            {product.brand.imageUrl ? (
+                                <Image
+                                    source={{ uri: product.brand.imageUrl }}
+                                    style={tw`w-6 h-6 rounded-full mr-2`}
+                                    resizeMode="contain"
+                                />
+                            ) : null}
+                            <Text style={tw`text-gray-700 font-medium`}>{product.brand.name}</Text>
                         </View>
                     )}
                 </View>
@@ -317,15 +332,15 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                 <IconButton
                     icon={isFavorite ? "heart" : "heart-outline"}
                     size={24}
-                    iconColor="#EE4D2D"
+                    iconColor="#0B5ED7"
                     style={tw`w-12 h-12 border border-gray-300 rounded-xl m-0 mr-3`}
                     onPress={toggleWishlist}
                 />
                 <IconButton
                     icon="compare"
                     size={24}
-                    iconColor="#EE4D2D"
-                    style={tw`w-12 h-12 border border-[#EE4D2D] rounded-xl m-0 mr-3`}
+                    iconColor="#0B5ED7"
+                    style={tw`w-12 h-12 border border-[#0B5ED7] rounded-xl m-0 mr-3`}
                     onPress={addToCompare}
                 />
                 <Button
@@ -335,7 +350,8 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
                     disabled={isAddingToCart}
                     icon="cart-plus"
                     style={tw`flex-1 rounded-xl`}
-                    textColor="#EE4D2D"
+                    buttonColor="#0B5ED7"
+                    contentStyle={tw`py-2`}
                 >
                     Thêm giỏ • {formatPrice(Number(product.price) * quantity)}
                 </Button>

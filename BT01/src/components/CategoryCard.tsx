@@ -17,7 +17,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ item, onPress }) => (
         >
             <View style={tw`w-24 max-h-24 min-h-24 items-center py-3 px-2`}>
                 <View
-                    style={tw`w-14 h-14 max-h-15 rounded-xl bg-orange-50 items-center justify-center mb-2 overflow-hidden`}
+                    style={tw`w-14 h-14 max-h-15 rounded-xl bg-blue-50 items-center justify-center mb-2 overflow-hidden`}
                 >
                     {item.image ? (
                         item.image.startsWith('http') ? (
@@ -27,10 +27,10 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ item, onPress }) => (
                                 resizeMode="cover"
                             />
                         ) : (
-                            <IconButton icon={item.image} size={28} iconColor="#EE4D2D" style={tw`m-0`} />
+                            <IconButton icon={item.image} size={28} iconColor="#0059c9" style={tw`m-0`} />
                         )
                     ) : (
-                        <IconButton icon="shape" size={28} iconColor="#EE4D2D" style={tw`m-0`} />
+                        <IconButton icon="shape" size={28} iconColor="#0059c9" style={tw`m-0`} />
                     )}
                 </View>
                 <Text

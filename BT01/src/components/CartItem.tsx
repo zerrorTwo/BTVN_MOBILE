@@ -50,7 +50,7 @@ const CartItemComponent: React.FC<CartItemProps> = ({
                     {item.product.name}
                 </Text>
 
-                <Text style={tw`text-base font-bold text-[#EE4D2D] mt-1`}>
+                <Text style={tw`text-base font-bold text-[#0B5ED7] mt-1`}>
                     ₫{item.product.price.toLocaleString()}
                 </Text>
 
@@ -90,7 +90,7 @@ const CartItemComponent: React.FC<CartItemProps> = ({
             </View>
 
             <TouchableOpacity onPress={handleRemove} style={tw`ml-2`} activeOpacity={0.7}>
-                <Ionicons name="trash-outline" size={24} color="#EE4D2D" />
+                <Ionicons name="trash-outline" size={24} color="#0B5ED7" />
             </TouchableOpacity>
         </View>
     );
