@@ -27,7 +27,7 @@ const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
     return (
         <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
             <Surface style={tw`mx-2 my-2 rounded-2xl max-h-64 min-h-64 bg-white w-40`} elevation={3}>
-                <View style={tw`overflow-hidden rounded-2xl`}>
+                <View style={tw`flex-1 overflow-hidden rounded-2xl`}>
                     {/* Image */}
                     <View style={tw`relative `}>
                         <View style={tw`h-32  bg-gray-100`}>
