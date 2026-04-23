@@ -1,56 +1,24 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
-import { Op } from "sequelize";
 import sequelize from "../config/database";
-import { Cart, CartItem, Order, OrderItem, Product } from "../models";
-import { OrderStatus } from "../models/order.model";
+import { Order, OrderItem, Product } from "../models";
+import { OrderStatus, PaymentStatus } from "../models/order.model";
+import {
+  createOrderFromCart,
+  autoConfirmPendingOrders,
+  getCanCancel,
+  setOrderStatus,
+  OrderError,
+} from "../services/order.service";
 
 /**
- * Auto-confirm PENDING orders that are older than 30 minutes.
- * Called before returning order lists/details to ensure status is up-to-date.
+ * POST /api/v1/orders  (and /checkout)
+ * Create an order from the current user's cart. For MoMo, also returns payUrl.
  */
-const autoConfirmPendingOrders = async (userId?: number): Promise<void> => {
-  try {
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-    const where: any = {
-      status: OrderStatus.PENDING,
-      createdAt: { [Op.lte]: thirtyMinutesAgo },
-    };
-    if (userId) {
-      where.userId = userId;
-    }
-    await Order.update({ status: OrderStatus.CONFIRMED }, { where });
-  } catch (error) {
-    console.error("Auto-confirm error:", error);
-  }
-};
-
-/**
- * Returns the cancel capability for an order:
- * - "direct"  : within 30 min, PENDING/CONFIRMED/PREPARING → direct cancel (CANCELLED)
- * - "request" : after 30 min,  PENDING/CONFIRMED/PREPARING → cancel request (CANCEL_REQUESTED)
- * - "none"    : SHIPPING, COMPLETED, CANCELLED, CANCEL_REQUESTED → cannot cancel
- */
-const CANCELLABLE_STATUSES = [
-  OrderStatus.PENDING,
-  OrderStatus.CONFIRMED,
-  OrderStatus.PREPARING,
-] as const;
-
-const getCanCancel = (order: any): "direct" | "request" | "none" => {
-  if (!CANCELLABLE_STATUSES.includes(order.status)) return "none";
-  const orderAge = Date.now() - new Date(order.createdAt).getTime();
-  const thirtyMinutes = 30 * 60 * 1000;
-  return orderAge <= thirtyMinutes ? "direct" : "request";
-};
-
 export const checkout = async (req: Request, res: Response): Promise<void> => {
-  const transaction = await sequelize.transaction();
-
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      await transaction.rollback();
       res.status(400).json({
         success: false,
         message: "Validation failed",
@@ -60,105 +28,27 @@ export const checkout = async (req: Request, res: Response): Promise<void> => {
     }
 
     const userId = (req as any).user.id;
-    const {
-      paymentMethod,
-      shippingAddress,
-      receiverName,
-      receiverPhone,
-      note,
-    } = req.body;
-
-    const cart = await Cart.findOne({
-      where: { userId },
-      include: [
-        {
-          model: CartItem,
-          as: "items",
-          include: [{ model: Product, as: "product" }],
-        },
-      ],
-      transaction,
+    const result = await createOrderFromCart({
+      userId,
+      paymentMethod: req.body.paymentMethod,
+      shippingAddress: req.body.shippingAddress,
+      receiverName: req.body.receiverName,
+      receiverPhone: req.body.receiverPhone,
+      note: req.body.note,
     });
-
-    if (!cart || !(cart as any).items || (cart as any).items.length === 0) {
-      await transaction.rollback();
-      res.status(400).json({
-        success: false,
-        message: "Cart is empty",
-      });
-      return;
-    }
-
-    const items = (cart as any).items;
-
-    for (const item of items) {
-      if (item.product.stock < item.quantity) {
-        await transaction.rollback();
-        res.status(400).json({
-          success: false,
-          message: `Product "${item.product.name}" has only ${item.product.stock} items in stock`,
-        });
-        return;
-      }
-    }
-
-    const total = items.reduce(
-      (sum: number, item: any) =>
-        sum + item.quantity * parseFloat(item.product.price),
-      0,
-    );
-
-    const orderCode = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
-    const order = await Order.create(
-      {
-        userId,
-        orderCode,
-        total,
-        discount: 0,
-        paymentMethod,
-        status: OrderStatus.PENDING,
-        shippingAddress,
-        receiverName,
-        receiverPhone,
-        note: note || null,
-      },
-      { transaction },
-    );
-
-    for (const item of items) {
-      await OrderItem.create(
-        {
-          orderId: order.id,
-          productId: item.product.id,
-          quantity: item.quantity,
-          unitPrice: parseFloat(item.product.price),
-        },
-        { transaction },
-      );
-
-      await Product.update(
-        { stock: item.product.stock - item.quantity },
-        { where: { id: item.product.id }, transaction },
-      );
-    }
-
-    await CartItem.destroy({ where: { cartId: cart.id }, transaction });
-
-    await transaction.commit();
 
     res.status(201).json({
       success: true,
       message: "Order created successfully",
-      data: {
-        orderId: order.id,
-        orderCode: order.orderCode,
-        total: parseFloat(order.total.toString()),
-        status: order.status,
-      },
+      data: result,
     });
   } catch (error) {
-    await transaction.rollback();
+    if (error instanceof OrderError) {
+      res
+        .status(error.statusCode)
+        .json({ success: false, message: error.message });
+      return;
+    }
     console.error("Checkout error:", error);
     res.status(500).json({
       success: false,
@@ -203,6 +93,8 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
       total: parseFloat(order.total),
       discount: parseFloat(order.discount),
       paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      transId: order.transId,
       status: order.status,
       canCancel: getCanCancel(order),
       shippingAddress: order.shippingAddress,
@@ -285,6 +177,8 @@ export const getOrderById = async (
       total: parseFloat(order.total.toString()),
       discount: parseFloat(order.discount.toString()),
       paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      transId: order.transId,
       status: order.status,
       canCancel: getCanCancel(order),
       shippingAddress: order.shippingAddress,
@@ -357,6 +251,18 @@ export const cancelOrder = async (
       return;
     }
 
+    // If a MoMo order was PAID, cancellation should go through the refund flow,
+    // not the direct-cancel path. For now, block direct cancel of PAID orders.
+    if (order.paymentStatus === PaymentStatus.PAID) {
+      await transaction.rollback();
+      res.status(400).json({
+        success: false,
+        message:
+          "Paid orders cannot be cancelled directly. Please request a refund.",
+      });
+      return;
+    }
+
     const cancelMode = getCanCancel(order);
 
     if (cancelMode === "none") {
@@ -369,7 +275,6 @@ export const cancelOrder = async (
     }
 
     if (cancelMode === "direct") {
-      // Within 30 min: cancel directly and restore stock
       order.status = OrderStatus.CANCELLED;
       order.cancellationReason = cancellationReason;
       await order.save({ transaction });
@@ -391,7 +296,7 @@ export const cancelOrder = async (
       return;
     }
 
-    // cancelMode === "request": after 30 min → send cancel request
+    // cancelMode === "request"
     order.status = OrderStatus.CANCEL_REQUESTED;
     order.cancellationReason = cancellationReason;
     await order.save({ transaction });
@@ -473,6 +378,9 @@ export const requestCancelOrder = async (
   }
 };
 
+/**
+ * PUT /api/v1/orders/:id/status — ADMIN ONLY (enforced by requireAdmin middleware).
+ */
 export const updateOrderStatus = async (
   req: Request,
   res: Response,
@@ -492,24 +400,21 @@ export const updateOrderStatus = async (
     const { status } = req.body;
 
     const orderId = Array.isArray(id) ? parseInt(id[0]) : parseInt(id);
-    const order = await Order.findByPk(orderId);
 
-    if (!order) {
-      res.status(404).json({
-        success: false,
-        message: "Order not found",
+    try {
+      const order = await setOrderStatus(orderId, status);
+      res.json({
+        success: true,
+        message: "Order status updated successfully",
+        data: { status: order.status },
       });
-      return;
+    } catch (err) {
+      if (err instanceof OrderError) {
+        res.status(err.statusCode).json({ success: false, message: err.message });
+        return;
+      }
+      throw err;
     }
-
-    order.status = status;
-    await order.save();
-
-    res.json({
-      success: true,
-      message: "Order status updated successfully",
-      data: { status: order.status },
-    });
   } catch (error) {
     console.error("Update order status error:", error);
     res.status(500).json({

@@ -4,17 +4,28 @@ import {
     Text,
     ScrollView,
     TextInput,
-    Alert,
+    TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, ActivityIndicator, RadioButton, IconButton } from "react-native-paper";
+import { Button, IconButton } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
+import { MotiView } from "moti";
+import Toast from "react-native-toast-message";
 import tw from "twrnc";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
 import { useGetCartQuery } from "../services/api/cartApi";
 import { useCheckoutMutation } from "../services/api/orderApi";
 import { PaymentMethod } from "../types/order.types";
+import { colors, PAYMENT_METHOD_META } from "../theme";
+
+const ORDERED_METHODS: PaymentMethod[] = [
+    PaymentMethod.COD,
+    PaymentMethod.MOMO,
+    PaymentMethod.VNPAY,
+    PaymentMethod.ZALOPAY,
+];
 
 export const CheckoutScreen = ({ navigation }: any) => {
     const user = useSelector((state: RootState) => state.auth.user);
@@ -25,7 +36,9 @@ export const CheckoutScreen = ({ navigation }: any) => {
     const [receiverName, setReceiverName] = useState("");
     const [receiverPhone, setReceiverPhone] = useState("");
     const [note, setNote] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.COD);
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+        PaymentMethod.COD,
+    );
 
     useEffect(() => {
         if (user) {
@@ -46,15 +59,15 @@ export const CheckoutScreen = ({ navigation }: any) => {
 
     const handlePlaceOrder = async () => {
         if (!shippingAddress.trim()) {
-            Alert.alert("Lỗi", "Vui lòng nhập địa chỉ giao hàng");
+            Toast.show({ type: "warning", text1: "Vui lòng nhập địa chỉ giao hàng" });
             return;
         }
         if (!receiverName.trim()) {
-            Alert.alert("Lỗi", "Vui lòng nhập tên người nhận");
+            Toast.show({ type: "warning", text1: "Vui lòng nhập tên người nhận" });
             return;
         }
         if (!receiverPhone.trim()) {
-            Alert.alert("Lỗi", "Vui lòng nhập số điện thoại");
+            Toast.show({ type: "warning", text1: "Vui lòng nhập số điện thoại" });
             return;
         }
 
@@ -67,49 +80,107 @@ export const CheckoutScreen = ({ navigation }: any) => {
                 note: note.trim() || undefined,
             }).unwrap();
 
-            // Navigate immediately — Alert.alert doesn't work on web
+            const orderId = result.data?.orderId;
+            const payUrl = result.data?.payUrl;
+
+            if (paymentMethod === PaymentMethod.MOMO && payUrl && orderId) {
+                navigation.reset({
+                    index: 1,
+                    routes: [
+                        { name: "Home" },
+                        { name: "PaymentWebView", params: { orderId, payUrl } },
+                    ],
+                });
+                return;
+            }
+
+            Toast.show({
+                type: "success",
+                text1: "Đặt hàng thành công",
+                text2: paymentMethod === PaymentMethod.MOMO
+                    ? "Bạn có thể thanh toán lại từ chi tiết đơn"
+                    : "Đơn hàng đang chờ xác nhận",
+            });
             navigation.reset({
                 index: 1,
                 routes: [
-                    { name: 'Home' },
-                    {
-                        name: 'OrderDetail',
-                        params: { orderId: result.data?.orderId },
-                    },
+                    { name: "Home" },
+                    { name: "OrderDetail", params: { orderId } },
                 ],
             });
         } catch (error: any) {
-            Alert.alert("Lỗi", error.data?.message || "Không thể đặt hàng");
+            Toast.show({
+                type: "error",
+                text1: "Không thể đặt hàng",
+                text2: error.data?.message || "Vui lòng thử lại",
+            });
         }
     };
 
     const cart = cartData?.data;
-    const shippingFee = 30000;
-    const total = (cart?.subtotal || 0) + shippingFee;
+    const total = cart?.subtotal || 0;
 
     return (
-        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["top", "bottom"]}>
+        <SafeAreaView
+            style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+            edges={["top", "bottom"]}
+        >
             <StatusBar style="dark" />
-            <View style={tw`flex-row items-center justify-between px-2 py-2 bg-white border-b border-gray-100`}>
+
+            {/* Header */}
+            <View
+                style={[
+                    tw`flex-row items-center justify-between px-2 py-2 border-b`,
+                    {
+                        backgroundColor: colors.background.paper,
+                        borderColor: colors.border.light,
+                    },
+                ]}
+            >
                 <IconButton
                     icon="arrow-left"
                     size={22}
                     onPress={() => navigation.goBack()}
-                    iconColor="#111827"
+                    iconColor={colors.text.primary}
                 />
-                <Text style={tw`text-lg font-semibold text-gray-900 text-center`}>Đặt hàng</Text>
+                <Text
+                    style={[tw`text-lg font-semibold`, { color: colors.text.primary }]}
+                >
+                    Đặt hàng
+                </Text>
                 <View style={tw`w-[40px]`} />
             </View>
-            <ScrollView style={tw`flex-1`}>
-                {/* Shipping Address Section */}
-                <View style={tw`bg-white p-4 mb-2`}>
-                    <Text style={tw`text-base font-semibold mb-3`}>Địa chỉ giao hàng</Text>
+
+            <ScrollView style={tw`flex-1`} showsVerticalScrollIndicator={false}>
+                {/* Shipping Address */}
+                <MotiView
+                    from={{ opacity: 0, translateY: 12 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: "timing", duration: 260 }}
+                    style={[tw`p-4 mb-2`, { backgroundColor: colors.background.paper }]}
+                >
+                    <View style={tw`flex-row items-center mb-3`}>
+                        <Ionicons name="location" size={18} color={colors.primary.main} />
+                        <Text
+                            style={[tw`text-base font-semibold ml-2`, { color: colors.text.primary }]}
+                        >
+                            Địa chỉ giao hàng
+                        </Text>
+                    </View>
 
                     <TextInput
                         placeholder="Họ và tên người nhận *"
                         value={receiverName}
                         onChangeText={setReceiverName}
-                        style={tw`border border-gray-300 rounded px-3 py-2 mb-3`}
+                        placeholderTextColor={colors.text.hint}
+                        style={[
+                            tw`rounded-xl px-3 py-3 mb-3`,
+                            {
+                                borderWidth: 1,
+                                borderColor: colors.border.light,
+                                color: colors.text.primary,
+                            },
+                        ]}
                     />
 
                     <TextInput
@@ -117,7 +188,15 @@ export const CheckoutScreen = ({ navigation }: any) => {
                         value={receiverPhone}
                         onChangeText={setReceiverPhone}
                         keyboardType="phone-pad"
-                        style={tw`border border-gray-300 rounded px-3 py-2 mb-3`}
+                        placeholderTextColor={colors.text.hint}
+                        style={[
+                            tw`rounded-xl px-3 py-3 mb-3`,
+                            {
+                                borderWidth: 1,
+                                borderColor: colors.border.light,
+                                color: colors.text.primary,
+                            },
+                        ]}
                     />
 
                     <TextInput
@@ -126,89 +205,238 @@ export const CheckoutScreen = ({ navigation }: any) => {
                         onChangeText={setShippingAddress}
                         multiline
                         numberOfLines={3}
-                        style={tw`border border-gray-300 rounded px-3 py-2`}
+                        placeholderTextColor={colors.text.hint}
+                        style={[
+                            tw`rounded-xl px-3 py-3`,
+                            {
+                                borderWidth: 1,
+                                borderColor: colors.border.light,
+                                color: colors.text.primary,
+                                minHeight: 72,
+                            },
+                        ]}
                         textAlignVertical="top"
                     />
-                </View>
+                </MotiView>
 
-                {/* Order Items Section */}
-                <View style={tw`bg-white p-4 mb-2`}>
-                    <Text style={tw`text-base font-semibold mb-3`}>
-                        Sản phẩm ({cart?.itemCount || 0})
-                    </Text>
+                {/* Items */}
+                <MotiView
+                    from={{ opacity: 0, translateY: 12 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: "timing", duration: 260, delay: 60 }}
+                    style={[tw`p-4 mb-2`, { backgroundColor: colors.background.paper }]}
+                >
+                    <View style={tw`flex-row items-center mb-3`}>
+                        <Ionicons name="cube-outline" size={18} color={colors.primary.main} />
+                        <Text
+                            style={[tw`text-base font-semibold ml-2`, { color: colors.text.primary }]}
+                        >
+                            Sản phẩm ({cart?.itemCount || 0})
+                        </Text>
+                    </View>
                     {cart?.items.map((item, index) => (
-                        <View key={index} style={tw`flex-row justify-between py-2`}>
-                            <Text style={tw`flex-1 text-gray-700`} numberOfLines={2}>
-                                {item.product.name} x{item.quantity}
+                        <View
+                            key={index}
+                            style={[
+                                tw`flex-row justify-between py-2`,
+                                index < (cart?.items.length || 0) - 1
+                                    ? { borderBottomWidth: 1, borderColor: colors.border.light }
+                                    : null,
+                            ]}
+                        >
+                            <Text
+                                style={[tw`flex-1 pr-2`, { color: colors.text.primary }]}
+                                numberOfLines={2}
+                            >
+                                {item.product.name}{" "}
+                                <Text style={{ color: colors.text.secondary }}>
+                                    x{item.quantity}
+                                </Text>
                             </Text>
-                            <Text style={tw`text-gray-800 font-semibold`}>
+                            <Text
+                                style={[tw`font-semibold`, { color: colors.text.primary }]}
+                            >
                                 ₫{item.itemTotal.toLocaleString()}
                             </Text>
                         </View>
                     ))}
-                </View>
+                </MotiView>
 
                 {/* Payment Method */}
-                <View style={tw`bg-white p-4 mb-2`}>
-                    <Text style={tw`text-base font-semibold mb-3`}>Phương thức thanh toán</Text>
+                <MotiView
+                    from={{ opacity: 0, translateY: 12 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: "timing", duration: 260, delay: 120 }}
+                    style={[tw`p-4 mb-2`, { backgroundColor: colors.background.paper }]}
+                >
+                    <View style={tw`flex-row items-center mb-3`}>
+                        <Ionicons name="wallet" size={18} color={colors.primary.main} />
+                        <Text
+                            style={[tw`text-base font-semibold ml-2`, { color: colors.text.primary }]}
+                        >
+                            Phương thức thanh toán
+                        </Text>
+                    </View>
 
-                    <RadioButton.Group
-                        onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
-                        value={paymentMethod}
-                    >
-                        <View style={tw`flex-row items-center`}>
-                            <RadioButton value={PaymentMethod.COD} />
-                            <Text style={tw`flex-1`}>Thanh toán khi nhận hàng (COD)</Text>
-                        </View>
-                        <View style={tw`flex-row items-center opacity-50`}>
-                            <RadioButton value={PaymentMethod.MOMO} disabled />
-                            <Text style={tw`flex-1 text-gray-400`}>Ví MoMo (Sắp ra mắt)</Text>
-                        </View>
-                        <View style={tw`flex-row items-center opacity-50`}>
-                            <RadioButton value={PaymentMethod.VNPAY} disabled />
-                            <Text style={tw`flex-1 text-gray-400`}>VNPay (Sắp ra mắt)</Text>
-                        </View>
-                    </RadioButton.Group>
-                </View>
+                    {ORDERED_METHODS.map((method) => {
+                        const meta = PAYMENT_METHOD_META[method];
+                        const selected = paymentMethod === method;
+                        const disabled = !meta.enabled;
+                        return (
+                            <TouchableOpacity
+                                key={method}
+                                disabled={disabled}
+                                onPress={() => setPaymentMethod(method)}
+                                activeOpacity={0.8}
+                                style={[
+                                    tw`flex-row items-center p-3 rounded-2xl mb-2`,
+                                    {
+                                        borderWidth: selected ? 2 : 1,
+                                        borderColor: selected ? meta.color : colors.border.light,
+                                        backgroundColor: selected ? meta.softBg : colors.background.paper,
+                                        opacity: disabled ? 0.5 : 1,
+                                    },
+                                ]}
+                            >
+                                <View
+                                    style={[
+                                        tw`w-10 h-10 rounded-xl items-center justify-center`,
+                                        { backgroundColor: selected ? meta.color : meta.softBg },
+                                    ]}
+                                >
+                                    <Ionicons
+                                        name={meta.icon as any}
+                                        size={20}
+                                        color={selected ? "#fff" : meta.color}
+                                    />
+                                </View>
+                                <View style={tw`flex-1 ml-3`}>
+                                    <Text
+                                        style={[
+                                            tw`font-semibold`,
+                                            { color: disabled ? colors.text.hint : colors.text.primary },
+                                        ]}
+                                    >
+                                        {meta.label}
+                                    </Text>
+                                    <Text
+                                        style={[tw`text-xs mt-0.5`, { color: colors.text.secondary }]}
+                                    >
+                                        {method === PaymentMethod.COD
+                                            ? "Trả tiền khi giao hàng"
+                                            : method === PaymentMethod.MOMO
+                                                ? "Thanh toán qua QR / ứng dụng MoMo"
+                                                : "Sắp ra mắt"}
+                                    </Text>
+                                </View>
+                                {selected && !disabled && (
+                                    <Ionicons
+                                        name="checkmark-circle"
+                                        size={22}
+                                        color={meta.color}
+                                    />
+                                )}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </MotiView>
 
                 {/* Note */}
-                <View style={tw`bg-white p-4 mb-2`}>
-                    <Text style={tw`text-base font-semibold mb-3`}>Ghi chú</Text>
+                <MotiView
+                    from={{ opacity: 0, translateY: 12 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: "timing", duration: 260, delay: 180 }}
+                    style={[tw`p-4 mb-2`, { backgroundColor: colors.background.paper }]}
+                >
+                    <View style={tw`flex-row items-center mb-3`}>
+                        <Ionicons
+                            name="document-text-outline"
+                            size={18}
+                            color={colors.primary.main}
+                        />
+                        <Text
+                            style={[tw`text-base font-semibold ml-2`, { color: colors.text.primary }]}
+                        >
+                            Ghi chú
+                        </Text>
+                    </View>
                     <TextInput
                         placeholder="Ghi chú cho người bán..."
                         value={note}
                         onChangeText={setNote}
                         multiline
                         numberOfLines={3}
-                        style={tw`border border-gray-300 rounded px-3 py-2`}
+                        placeholderTextColor={colors.text.hint}
+                        style={[
+                            tw`rounded-xl px-3 py-3`,
+                            {
+                                borderWidth: 1,
+                                borderColor: colors.border.light,
+                                color: colors.text.primary,
+                                minHeight: 72,
+                            },
+                        ]}
                         textAlignVertical="top"
                     />
-                </View>
+                </MotiView>
 
                 {/* Price Summary */}
-                <View style={tw`bg-white p-4 mb-2`}>
+                <MotiView
+                    from={{ opacity: 0, translateY: 12 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: "timing", duration: 260, delay: 240 }}
+                    style={[tw`p-4 mb-4`, { backgroundColor: colors.background.paper }]}
+                >
                     <View style={tw`flex-row justify-between py-2`}>
-                        <Text style={tw`text-gray-600`}>Tạm tính</Text>
-                        <Text style={tw`text-gray-800`}>₫{cart?.subtotal.toLocaleString()}</Text>
+                        <Text style={{ color: colors.text.secondary }}>Tạm tính</Text>
+                        <Text style={{ color: colors.text.primary }}>
+                            ₫{cart?.subtotal.toLocaleString() || 0}
+                        </Text>
                     </View>
                     <View style={tw`flex-row justify-between py-2`}>
-                        <Text style={tw`text-gray-600`}>Phí vận chuyển</Text>
-                        <Text style={tw`text-gray-800`}>₫{shippingFee.toLocaleString()}</Text>
+                        <Text style={{ color: colors.text.secondary }}>Phí vận chuyển</Text>
+                        <Text style={[tw`font-semibold`, { color: colors.success.main }]}>
+                            Miễn phí
+                        </Text>
                     </View>
-                    <View style={tw`border-t border-gray-200 mt-2 pt-2 flex-row justify-between`}>
-                        <Text style={tw`text-base font-semibold`}>Tổng cộng</Text>
-                        <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
+                    <View
+                        style={[
+                            tw`flex-row justify-between pt-2 mt-2`,
+                            { borderTopWidth: 1, borderColor: colors.border.light },
+                        ]}
+                    >
+                        <Text
+                            style={[tw`text-base font-semibold`, { color: colors.text.primary }]}
+                        >
+                            Tổng cộng
+                        </Text>
+                        <Text
+                            style={[tw`text-xl font-bold`, { color: colors.primary.main }]}
+                        >
                             ₫{total.toLocaleString()}
                         </Text>
                     </View>
-                </View>
+                </MotiView>
             </ScrollView>
 
             {/* Bottom Bar */}
-            <View style={tw`bg-white px-4 py-4 border-t border-gray-200`}>
+            <MotiView
+                from={{ translateY: 40, opacity: 0 }}
+                animate={{ translateY: 0, opacity: 1 }}
+                transition={{ type: "timing", duration: 320 }}
+                style={[
+                    tw`px-4 py-4 border-t`,
+                    {
+                        backgroundColor: colors.background.paper,
+                        borderColor: colors.border.light,
+                    },
+                ]}
+            >
                 <View style={tw`flex-row justify-between items-center mb-3`}>
-                    <Text style={tw`text-gray-600`}>Tổng thanh toán</Text>
-                    <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
+                    <Text style={{ color: colors.text.secondary }}>Tổng thanh toán</Text>
+                    <Text
+                        style={[tw`text-2xl font-bold`, { color: colors.primary.main }]}
+                    >
                         ₫{total.toLocaleString()}
                     </Text>
                 </View>
@@ -217,12 +445,24 @@ export const CheckoutScreen = ({ navigation }: any) => {
                     onPress={handlePlaceOrder}
                     loading={isLoading}
                     disabled={isLoading}
-                    style={tw`bg-[#0B5ED7] py-1`}
-                    labelStyle={tw`text-base font-semibold`}
+                    icon={paymentMethod === PaymentMethod.MOMO ? "wallet" : "check"}
+                    contentStyle={tw`py-1`}
+                    style={[
+                        tw`rounded-xl`,
+                        {
+                            backgroundColor:
+                                paymentMethod === PaymentMethod.MOMO
+                                    ? colors.provider.momo
+                                    : colors.primary.main,
+                        },
+                    ]}
+                    labelStyle={tw`text-base font-semibold text-white`}
                 >
-                    Đặt hàng
+                    {paymentMethod === PaymentMethod.MOMO
+                        ? "Thanh toán với MoMo"
+                        : "Đặt hàng"}
                 </Button>
-            </View>
+            </MotiView>
         </SafeAreaView>
     );
 };

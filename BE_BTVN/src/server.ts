@@ -8,16 +8,19 @@ import productRoutes from "./routes/product.routes";
 import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
 import adminRoutes from "./routes/admin.routes";
+import paymentRoutes from "./routes/payment.routes";
 import {
   User,
   Product,
   Category,
+  Brand,
   Cart,
   CartItem,
   Order,
   OrderItem,
   Coupon,
   Review,
+  Payment,
 } from "./models";
 import seedProducts from "./utils/seeder";
 import { errorHandler } from "./middleware/error.middleware";
@@ -79,6 +82,7 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/payments", paymentRoutes);
 
 // Backward compatible routes for existing clients
 app.use("/api/auth", authRoutes);
@@ -87,6 +91,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.use(errorHandler);
 
@@ -94,8 +99,10 @@ const startServer = async () => {
   try {
     await connectDatabase();
 
+    // Order matters — children must wait for their FK parents.
     await User.sync();
     await Category.sync();
+    await Brand.sync();
     await Product.sync();
     await Cart.sync();
     await CartItem.sync();
@@ -103,6 +110,7 @@ const startServer = async () => {
     await OrderItem.sync();
     await Coupon.sync();
     await Review.sync();
+    await Payment.sync();
 
     await seedProducts();
 

@@ -15,6 +15,13 @@ export enum PaymentMethod {
   ZALOPAY = "ZALOPAY",
 }
 
+export enum PaymentStatus {
+  UNPAID = "UNPAID",
+  PAID = "PAID",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED",
+}
+
 export interface OrderItem {
   id: number;
   quantity: number;
@@ -32,6 +39,8 @@ export interface Order {
   total: number;
   discount: number;
   paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  transId?: string | null;
   status: OrderStatus;
   canCancel: "direct" | "request" | "none";
   shippingAddress: string;
@@ -60,6 +69,21 @@ export interface CheckoutResponse {
     orderCode: string;
     total: number;
     status: OrderStatus;
+    paymentStatus: PaymentStatus;
+    paymentMethod: PaymentMethod;
+    payUrl?: string;
+    deeplink?: string;
+    qrCodeUrl?: string;
+  };
+}
+
+export interface InitMomoResponse {
+  success: boolean;
+  data?: {
+    orderId: number;
+    payUrl?: string;
+    deeplink?: string;
+    qrCodeUrl?: string;
   };
 }
 

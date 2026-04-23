@@ -92,6 +92,24 @@ export const colors = {
     cancelled: "#9E9E9E",
     cancelRequested: "#F44336",
   },
+
+  // Payment status
+  payment: {
+    unpaid: "#F69113",
+    paid: "#26AA99",
+    failed: "#F44336",
+    refunded: "#9E9E9E",
+  },
+
+  // Payment provider brand colors
+  provider: {
+    momo: "#A50064",
+    momoLight: "#D82D8B",
+    momoSoft: "#FFE4F1",
+    vnpay: "#005BAA",
+    zalopay: "#0068FF",
+    cod: "#26AA99",
+  },
 };
 
 // Gradient presets
@@ -105,4 +123,6 @@ export const gradients = {
   shimmer: ["#F0F0F0", "#E8E8E8", "#F0F0F0"],
   silver: ["#E8E8E8", "#F5F5F5", "#E8E8E8"],
   gold: ["#FFD700", "#FFC107", "#FFD700"],
+  momo: ["#D82D8B", "#A50064"],
+  splash: ["#1E3A8A", "#0B5ED7", "#3B82F6"],
 };

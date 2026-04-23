@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
+import { User } from "../models";
 
 export interface AuthRequest extends Request {
   userId?: number;
@@ -67,3 +68,35 @@ export const resetPasswordMiddleware = (
 };
 
 export const authenticate = authMiddleware;
+
+/**
+ * Requires the caller to have role=ADMIN. Must be used AFTER `authenticate`.
+ * Loads the user from DB to check role (JWT only carries userId).
+ */
+export const requireAdmin = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const userId = (req as any).userId || (req as any).user?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Not authenticated" });
+      return;
+    }
+    const user = await User.findByPk(userId);
+    if (!user || user.role !== "ADMIN") {
+      res.status(403).json({
+        success: false,
+        message: "Admin privilege required",
+      });
+      return;
+    }
+    (req as any).user = { id: user.id, role: user.role };
+    next();
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to verify admin role" });
+  }
+};

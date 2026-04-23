@@ -1,0 +1,103 @@
+# Run everything locally:  docker compose up -d --build
+# View logs:               docker compose logs -f backend
+# Stop and wipe data:      docker compose down -v
+#
+# Services:
+#   mysql   — DB on port 3307 (host) → 3306 (container)
+#   mailpit — SMTP inbox at http://localhost:8025 (captures all outbound email,
+#             no Gmail/app password required)
+#   backend — Node API on http://localhost:5000
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: btvn-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: be_btvn
+      MYSQL_USER: be_user
+      MYSQL_PASSWORD: be_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Auto-imported the first time MySQL initializes (when the volume is empty).
+      # If you change this file, run: docker compose down -v && docker compose up -d
+      - ./BE_BTVN/seed/be_btvn.sql:/docker-entrypoint-initdb.d/01-seed.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-uroot",
+          "-prootpass",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: btvn-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+
+  backend:
+    build:
+      context: ./BE_BTVN
+      dockerfile: Dockerfile
+    container_name: btvn-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    ports:
+      - "5000:5000"
+    volumes:
+      # Seed data — seeder resolves __dirname/../../.. which maps to /, so
+      # mount the JSONs at the filesystem root inside the container.
+      - ./laptops.json:/laptops.json:ro
+      - ./laptops2.json:/laptops2.json:ro
+    environment:
+      PORT: 5000
+      # DB
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: be_btvn
+      DB_USER: be_user
+      DB_PASSWORD: be_pass
+      # JWT
+      JWT_SECRET: dev-secret-change-me
+      JWT_EXPIRE: 7d
+      JWT_REFRESH_SECRET: dev-refresh-secret-change-me
+      JWT_REFRESH_EXPIRE: 7d
+      # Email → Mailpit (unauth SMTP)
+      EMAIL_HOST: mailpit
+      EMAIL_PORT: 1025
+      EMAIL_SECURE: "false"
+      EMAIL_FROM_NAME: DDNC Store
+      EMAIL_USER: noreply@ddnc.local
+      # MoMo sandbox
+      MOMO_PARTNER_CODE: MOMO
+      MOMO_ACCESS_KEY: F8BBA842ECF85
+      MOMO_SECRET_KEY: K951B6PE1waDMi640xX08PD3vg6EkVlz
+      MOMO_ENDPOINT: https://test-payment.momo.vn/v2/gateway/api/create
+      # Fill with your public ngrok URL when you want to test MoMo end-to-end
+      MOMO_IPN_URL: ${MOMO_IPN_URL:-https://your-public-host.ngrok.io/api/v1/payments/momo/ipn}
+      MOMO_REDIRECT_URL: ${MOMO_REDIRECT_URL:-https://your-public-host.ngrok.io/api/v1/payments/momo/return}
+      MOMO_REQUEST_TYPE: captureWallet
+
+volumes:
+  mysql_data:

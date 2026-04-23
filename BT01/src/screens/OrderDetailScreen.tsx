@@ -7,36 +7,64 @@ import {
     TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, ActivityIndicator, Snackbar } from "react-native-paper";
+import { Button, Portal, Modal } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import { MotiView } from "moti";
+import Toast from "react-native-toast-message";
 import tw from "twrnc";
 import { OrderTimeline } from "../components/OrderTimeline";
+import { OrderDetailSkeleton } from "../components/Skeleton";
+import { EmptyState } from "../components/EmptyState";
 import {
     useGetOrderByIdQuery,
     useCancelOrderMutation,
+    useInitMomoPaymentMutation,
 } from "../services/api/orderApi";
-import { OrderStatus } from "../types/order.types";
+import {
+    OrderStatus,
+    PaymentMethod,
+    PaymentStatus,
+} from "../types/order.types";
+import { colors, PAYMENT_METHOD_META, PAYMENT_STATUS_META } from "../theme";
 
 export const OrderDetailScreen = ({ route, navigation }: any) => {
     const { orderId } = route.params;
     const { data, isLoading, refetch } = useGetOrderByIdQuery(orderId);
     const [cancelOrder, { isLoading: isCanceling }] = useCancelOrderMutation();
+    const [initMomoPayment, { isLoading: isRetryingPayment }] =
+        useInitMomoPaymentMutation();
 
     const [cancellationReason, setCancellationReason] = useState("");
-    const [showCancelInput, setShowCancelInput] = useState(false);
-    const [snackMessage, setSnackMessage] = useState("");
+    const [cancelModalVisible, setCancelModalVisible] = useState(false);
 
     const order = data?.data;
 
-    /**
-     * canCancel comes from API:
-     * - "direct"  : within 30 min → được hủy trực tiếp
-     * - "request" : sau 30 min → gửi yêu cầu hủy
-     * - "none"    : không được hủy
-     */
+    const handleRetryMomo = async () => {
+        try {
+            const result = await initMomoPayment(orderId).unwrap();
+            if (result.data?.payUrl) {
+                navigation.navigate("PaymentWebView", {
+                    orderId,
+                    payUrl: result.data.payUrl,
+                });
+            } else {
+                Toast.show({
+                    type: "error",
+                    text1: "Không lấy được liên kết thanh toán",
+                });
+            }
+        } catch (error: any) {
+            Toast.show({
+                type: "error",
+                text1: "Không thể khởi tạo MoMo",
+                text2: error.data?.message,
+            });
+        }
+    };
 
     const handleCancelOrder = async () => {
         if (!cancellationReason.trim()) {
-            setSnackMessage("Vui lòng nhập lý do hủy đơn");
+            Toast.show({ type: "warning", text1: "Vui lòng nhập lý do hủy" });
             return;
         }
 
@@ -46,227 +74,462 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                 data: { cancellationReason },
             }).unwrap();
 
-            if (order?.canCancel === "request") {
-                setSnackMessage("Đã gửi yêu cầu hủy đơn đến shop");
-            } else {
-                setSnackMessage("Đơn hàng đã được hủy thành công");
-            }
-            setShowCancelInput(false);
+            Toast.show({
+                type: "success",
+                text1:
+                    order?.canCancel === "request"
+                        ? "Đã gửi yêu cầu hủy đến shop"
+                        : "Đã hủy đơn hàng",
+            });
+            setCancelModalVisible(false);
             setCancellationReason("");
             refetch();
         } catch (error: any) {
-            setSnackMessage(error.data?.message || "Không thể hủy đơn hàng");
+            Toast.show({
+                type: "error",
+                text1: "Không thể hủy đơn",
+                text2: error.data?.message,
+            });
         }
     };
 
     if (isLoading) {
         return (
-            <View style={tw`flex-1 justify-center items-center bg-gray-50`}>
-                <ActivityIndicator size="large" color="#0B5ED7" />
-            </View>
+            <SafeAreaView
+                style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+                edges={["bottom"]}
+            >
+                <OrderDetailSkeleton />
+            </SafeAreaView>
         );
     }
 
     if (!order) {
         return (
-            <View style={tw`flex-1 justify-center items-center bg-gray-50`}>
-                <Text style={tw`text-gray-600`}>Không tìm thấy đơn hàng</Text>
-            </View>
+            <SafeAreaView
+                style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+                edges={["bottom"]}
+            >
+                <EmptyState
+                    iconName="alert-circle-outline"
+                    iconColor={colors.error.main}
+                    title="Không tìm thấy đơn hàng"
+                    message="Đơn hàng này có thể đã bị xóa hoặc không tồn tại"
+                    buttonText="Về trang chủ"
+                    onButtonPress={() => navigation.navigate("Home")}
+                />
+            </SafeAreaView>
         );
     }
+
+    const paymentMeta = PAYMENT_METHOD_META[order.paymentMethod];
+    const paymentStatusMeta = PAYMENT_STATUS_META[order.paymentStatus];
 
     const isTerminal =
         order.status === OrderStatus.CANCELLED ||
         order.status === OrderStatus.CANCEL_REQUESTED ||
         order.status === OrderStatus.COMPLETED;
 
-    const cancelButtonLabel = order.canCancel === "request"
-        ? "Gửi yêu cầu hủy đơn"
-        : "Hủy đơn hàng";
+    const showRetryMomo =
+        order.paymentMethod === PaymentMethod.MOMO &&
+        order.paymentStatus !== PaymentStatus.PAID &&
+        order.status === OrderStatus.PENDING;
+
+    const cancelButtonLabel =
+        order.canCancel === "request"
+            ? "Gửi yêu cầu hủy đơn"
+            : "Hủy đơn hàng";
 
     return (
-        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["bottom"]}>
-            <ScrollView>
+        <SafeAreaView
+            style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+            edges={["bottom"]}
+        >
+            <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Timeline */}
                 <View style={tw`p-4`}>
-                    <OrderTimeline currentStatus={order.status} createdAt={order.createdAt} />
+                    <OrderTimeline
+                        currentStatus={order.status}
+                        createdAt={order.createdAt}
+                    />
                 </View>
+
+                {/* Payment status banner */}
+                <MotiView
+                    from={{ opacity: 0, translateY: 8 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: "timing", duration: 280 }}
+                    style={[
+                        tw`mx-4 mb-2 p-3 rounded-2xl flex-row items-center`,
+                        { backgroundColor: paymentStatusMeta.softBg },
+                    ]}
+                >
+                    <View
+                        style={[
+                            tw`w-10 h-10 rounded-full items-center justify-center`,
+                            { backgroundColor: paymentStatusMeta.color },
+                        ]}
+                    >
+                        <Ionicons
+                            name={paymentStatusMeta.icon as any}
+                            size={20}
+                            color="#fff"
+                        />
+                    </View>
+                    <View style={tw`flex-1 ml-3`}>
+                        <Text
+                            style={[
+                                tw`font-semibold`,
+                                { color: paymentStatusMeta.color },
+                            ]}
+                        >
+                            {paymentStatusMeta.label}
+                        </Text>
+                        <View style={tw`flex-row items-center mt-0.5`}>
+                            <Ionicons
+                                name={paymentMeta.icon as any}
+                                size={12}
+                                color={colors.text.secondary}
+                            />
+                            <Text
+                                style={[tw`text-xs ml-1`, { color: colors.text.secondary }]}
+                            >
+                                {paymentMeta.label}
+                            </Text>
+                        </View>
+                    </View>
+                    {order.transId && (
+                        <View>
+                            <Text style={[tw`text-xs`, { color: colors.text.secondary }]}>
+                                Mã GD
+                            </Text>
+                            <Text
+                                style={[tw`text-xs font-semibold`, { color: colors.text.primary }]}
+                            >
+                                {order.transId}
+                            </Text>
+                        </View>
+                    )}
+                </MotiView>
 
                 {/* Order Info */}
-                <View style={tw`bg-white px-4 py-3 mb-2`}>
-                    <Text style={tw`text-base font-semibold mb-2`}>Thông tin đơn hàng</Text>
-                    <View style={tw`flex-row justify-between py-1`}>
-                        <Text style={tw`text-gray-600`}>Mã đơn hàng</Text>
-                        <Text style={tw`font-semibold`}>{order.orderCode}</Text>
+                <View
+                    style={[
+                        tw`mx-4 mb-2 p-4 rounded-2xl`,
+                        { backgroundColor: colors.background.paper },
+                    ]}
+                >
+                    <View style={tw`flex-row items-center mb-3`}>
+                        <Ionicons name="document-text" size={18} color={colors.primary.main} />
+                        <Text
+                            style={[tw`text-base font-semibold ml-2`, { color: colors.text.primary }]}
+                        >
+                            Thông tin đơn hàng
+                        </Text>
                     </View>
-                    <View style={tw`flex-row justify-between py-1`}>
-                        <Text style={tw`text-gray-600`}>Ngày đặt</Text>
-                        <Text>{new Date(order.createdAt).toLocaleString("vi-VN")}</Text>
-                    </View>
-                    <View style={tw`flex-row justify-between py-1`}>
-                        <Text style={tw`text-gray-600`}>Thanh toán</Text>
-                        <Text>{order.paymentMethod}</Text>
-                    </View>
+                    <Row label="Mã đơn hàng" value={order.orderCode} bold />
+                    <Row
+                        label="Ngày đặt"
+                        value={new Date(order.createdAt).toLocaleString("vi-VN")}
+                    />
                 </View>
 
-                {/* Shipping Info */}
-                <View style={tw`bg-white px-4 py-3 mb-2`}>
-                    <Text style={tw`text-base font-semibold mb-2`}>Địa chỉ nhận hàng</Text>
-                    <Text style={tw`font-semibold`}>{order.receiverName}</Text>
-                    <Text style={tw`text-gray-600 mt-1`}>{order.receiverPhone}</Text>
-                    <Text style={tw`text-gray-600 mt-1`}>{order.shippingAddress}</Text>
+                {/* Shipping */}
+                <View
+                    style={[
+                        tw`mx-4 mb-2 p-4 rounded-2xl`,
+                        { backgroundColor: colors.background.paper },
+                    ]}
+                >
+                    <View style={tw`flex-row items-center mb-3`}>
+                        <Ionicons name="location" size={18} color={colors.primary.main} />
+                        <Text
+                            style={[tw`text-base font-semibold ml-2`, { color: colors.text.primary }]}
+                        >
+                            Địa chỉ nhận hàng
+                        </Text>
+                    </View>
+                    <Text
+                        style={[tw`font-semibold`, { color: colors.text.primary }]}
+                    >
+                        {order.receiverName}
+                    </Text>
+                    <Text style={[tw`mt-1`, { color: colors.text.secondary }]}>
+                        {order.receiverPhone}
+                    </Text>
+                    <Text style={[tw`mt-1`, { color: colors.text.secondary }]}>
+                        {order.shippingAddress}
+                    </Text>
                 </View>
 
                 {/* Products */}
-                <View style={tw`bg-white px-4 py-3 mb-2`}>
-                    <Text style={tw`text-base font-semibold mb-3`}>Sản phẩm</Text>
+                <View
+                    style={[
+                        tw`mx-4 mb-2 p-4 rounded-2xl`,
+                        { backgroundColor: colors.background.paper },
+                    ]}
+                >
+                    <View style={tw`flex-row items-center mb-3`}>
+                        <Ionicons name="cube" size={18} color={colors.primary.main} />
+                        <Text
+                            style={[tw`text-base font-semibold ml-2`, { color: colors.text.primary }]}
+                        >
+                            Sản phẩm ({order.items.length})
+                        </Text>
+                    </View>
                     {order.items.map((item, index) => (
                         <View
                             key={index}
-                            style={tw`flex-row py-3 ${index > 0 ? "border-t border-gray-100" : ""}`}
+                            style={[
+                                tw`flex-row py-3`,
+                                index > 0
+                                    ? { borderTopWidth: 1, borderColor: colors.border.light }
+                                    : null,
+                            ]}
                         >
                             <Image
                                 source={{
                                     uri: item.product.image || "https://via.placeholder.com/80",
                                 }}
-                                style={tw`w-20 h-20 rounded`}
+                                style={tw`w-20 h-20 rounded-xl`}
                             />
-                            <View style={tw`flex-1 ml-3`}>
-                                <Text style={tw`text-sm font-semibold`} numberOfLines={2}>
+                            <View style={tw`flex-1 ml-3 justify-between`}>
+                                <Text
+                                    style={[tw`font-semibold`, { color: colors.text.primary }]}
+                                    numberOfLines={2}
+                                >
                                     {item.product.name}
                                 </Text>
-                                <Text style={tw`text-xs text-gray-500 mt-1`}>
-                                    x{item.quantity}
-                                </Text>
-                                <Text style={tw`text-base font-bold text-[#0B5ED7] mt-1`}>
-                                    ₫{item.unitPrice.toLocaleString()}
-                                </Text>
+                                <View style={tw`flex-row justify-between items-center`}>
+                                    <Text
+                                        style={[tw`text-xs`, { color: colors.text.secondary }]}
+                                    >
+                                        Số lượng: {item.quantity}
+                                    </Text>
+                                    <Text
+                                        style={[tw`text-base font-bold`, { color: colors.primary.main }]}
+                                    >
+                                        ₫{item.unitPrice.toLocaleString()}
+                                    </Text>
+                                </View>
                             </View>
                         </View>
                     ))}
                 </View>
 
-                {/* Price Summary */}
-                <View style={tw`bg-white px-4 py-3 mb-2`}>
-                    <View style={tw`flex-row justify-between py-2`}>
-                        <Text style={tw`text-gray-600`}>Tạm tính</Text>
-                        <Text>₫{order.total.toLocaleString()}</Text>
-                    </View>
-                    <View style={tw`flex-row justify-between py-2`}>
-                        <Text style={tw`text-gray-600`}>Giảm giá</Text>
-                        <Text>-₫{order.discount.toLocaleString()}</Text>
-                    </View>
-                    <View style={tw`flex-row justify-between py-2 border-t border-gray-200`}>
-                        <Text style={tw`font-semibold`}>Tổng cộng</Text>
-                        <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
+                {/* Price */}
+                <View
+                    style={[
+                        tw`mx-4 mb-2 p-4 rounded-2xl`,
+                        { backgroundColor: colors.background.paper },
+                    ]}
+                >
+                    <Row label="Tạm tính" value={`₫${order.total.toLocaleString()}`} />
+                    <Row
+                        label="Giảm giá"
+                        value={`-₫${order.discount.toLocaleString()}`}
+                    />
+                    <View
+                        style={[
+                            tw`flex-row justify-between pt-2 mt-2`,
+                            { borderTopWidth: 1, borderColor: colors.border.light },
+                        ]}
+                    >
+                        <Text
+                            style={[tw`font-semibold`, { color: colors.text.primary }]}
+                        >
+                            Tổng cộng
+                        </Text>
+                        <Text
+                            style={[tw`text-xl font-bold`, { color: colors.primary.main }]}
+                        >
                             ₫{order.total.toLocaleString()}
                         </Text>
                     </View>
                 </View>
 
-                {/* Note */}
-                {order.note && (
-                    <View style={tw`bg-white px-4 py-3 mb-2`}>
-                        <Text style={tw`text-base font-semibold mb-2`}>Ghi chú</Text>
-                        <Text style={tw`text-gray-600`}>{order.note}</Text>
+                {order.note ? (
+                    <View
+                        style={[
+                            tw`mx-4 mb-2 p-4 rounded-2xl`,
+                            { backgroundColor: colors.background.paper },
+                        ]}
+                    >
+                        <Text
+                            style={[tw`text-base font-semibold mb-2`, { color: colors.text.primary }]}
+                        >
+                            Ghi chú
+                        </Text>
+                        <Text style={{ color: colors.text.secondary }}>{order.note}</Text>
                     </View>
-                )}
+                ) : null}
 
-                {/* Cancellation Reason */}
-                {order.cancellationReason && (
-                    <View style={tw`bg-red-50 p-4 mb-2`}>
-                        <Text style={tw`text-base font-semibold text-red-800 mb-2`}>
+                {order.cancellationReason ? (
+                    <View
+                        style={[
+                            tw`mx-4 mb-2 p-4 rounded-2xl`,
+                            { backgroundColor: "#FDE8E7" },
+                        ]}
+                    >
+                        <Text
+                            style={[tw`text-base font-semibold mb-2`, { color: colors.error.dark }]}
+                        >
                             Lý do hủy
                         </Text>
-                        <Text style={tw`text-gray-700`}>{order.cancellationReason}</Text>
+                        <Text style={{ color: colors.text.primary }}>
+                            {order.cancellationReason}
+                        </Text>
                     </View>
-                )}
+                ) : null}
 
-                {/* Cancel Input */}
-                {showCancelInput && (
-                    <View style={tw`bg-white px-4 py-3 mb-2`}>
-                        <Text style={tw`text-base font-semibold mb-1`}>{cancelButtonLabel}</Text>
-                        {order.canCancel === "request" && (
-                            <Text style={tw`text-xs text-orange-600 mb-2`}>
-                                ⚠️ Đơn hàng đang được chuẩn bị/giao — yêu cầu sẽ được gửi đến shop để xác nhận hủy.
-                            </Text>
-                        )}
-                        <TextInput
-                            placeholder="Nhập lý do hủy đơn hàng..."
-                            value={cancellationReason}
-                            onChangeText={setCancellationReason}
-                            multiline
-                            numberOfLines={3}
-                            style={tw`border border-gray-300 rounded px-3 py-2 mb-3`}
-                            textAlignVertical="top"
-                        />
-                        <View style={tw`flex-row gap-2`}>
-                            <Button
-                                mode="outlined"
-                                onPress={() => {
-                                    setShowCancelInput(false);
-                                    setCancellationReason("");
-                                }}
-                                style={tw`flex-1`}
-                            >
-                                Hủy bỏ
-                            </Button>
-                            <Button
-                                mode="contained"
-                                onPress={handleCancelOrder}
-                                loading={isCanceling}
-                                style={tw`flex-1 bg-red-600`}
-                            >
-                                Xác nhận
-                            </Button>
-                        </View>
-                    </View>
-                )}
+                <View style={tw`h-6`} />
             </ScrollView>
 
-            {/* Action Buttons */}
-            {!showCancelInput && !isTerminal && order.canCancel !== "none" && (
-                <View style={tw`bg-white px-4 py-3 border-t border-gray-200`}>
-                    <View style={tw`flex-row gap-2 mb-2`}>
+            {/* Actions */}
+            {!isTerminal && (showRetryMomo || order.canCancel !== "none") && (
+                <MotiView
+                    from={{ translateY: 40, opacity: 0 }}
+                    animate={{ translateY: 0, opacity: 1 }}
+                    transition={{ type: "timing", duration: 300 }}
+                    style={[
+                        tw`px-4 py-3 border-t`,
+                        {
+                            backgroundColor: colors.background.paper,
+                            borderColor: colors.border.light,
+                        },
+                    ]}
+                >
+                    {showRetryMomo && (
+                        <Button
+                            mode="contained"
+                            onPress={handleRetryMomo}
+                            loading={isRetryingPayment}
+                            disabled={isRetryingPayment}
+                            icon="wallet"
+                            style={[
+                                tw`mb-2 rounded-xl`,
+                                { backgroundColor: colors.provider.momo },
+                            ]}
+                            contentStyle={tw`py-1`}
+                            labelStyle={tw`text-white font-semibold`}
+                        >
+                            Thanh toán với MoMo
+                        </Button>
+                    )}
+                    <View style={tw`flex-row`}>
                         <Button
                             mode="contained-tonal"
                             onPress={() => navigation.navigate("OrderTracking", { orderId })}
-                            style={tw`flex-1`}
+                            icon="map-marker-path"
+                            style={tw`flex-1 mr-2 rounded-xl`}
+                            contentStyle={tw`py-1`}
                         >
-                            Theo dõi đơn
+                            Theo dõi
                         </Button>
-                    </View>
-                    <View style={tw`flex-row gap-2`}>
-                        <Button
-                            mode="outlined"
-                            onPress={() => setShowCancelInput(true)}
-                            style={tw`flex-1 border-red-600`}
-                            textColor="#DC2626"
-                        >
-                            {cancelButtonLabel}
-                        </Button>
-                        {order.status === OrderStatus.COMPLETED && (
+                        {order.canCancel !== "none" && (
                             <Button
-                                mode="contained"
-                                onPress={() => navigation.navigate("Home")}
-                                style={tw`flex-1 bg-[#0B5ED7]`}
+                                mode="outlined"
+                                onPress={() => setCancelModalVisible(true)}
+                                style={[
+                                    tw`flex-1 rounded-xl`,
+                                    { borderColor: colors.error.main },
+                                ]}
+                                contentStyle={tw`py-1`}
+                                textColor={colors.error.main}
                             >
-                                Mua lại
+                                {cancelButtonLabel}
                             </Button>
                         )}
                     </View>
-                </View>
+                </MotiView>
             )}
 
-            {/* Snackbar */}
-            <Snackbar
-                visible={!!snackMessage}
-                onDismiss={() => setSnackMessage("")}
-                duration={2500}
-                style={tw`mb-4 bg-gray-800`}
-            >
-                {snackMessage}
-            </Snackbar>
+            {/* Cancel modal */}
+            <Portal>
+                <Modal
+                    visible={cancelModalVisible}
+                    onDismiss={() => setCancelModalVisible(false)}
+                    contentContainerStyle={[
+                        tw`mx-6 p-5 rounded-3xl`,
+                        { backgroundColor: colors.background.paper },
+                    ]}
+                >
+                    <Text
+                        style={[tw`text-lg font-bold mb-2`, { color: colors.text.primary }]}
+                    >
+                        {cancelButtonLabel}
+                    </Text>
+                    {order.canCancel === "request" && (
+                        <Text
+                            style={[
+                                tw`text-xs mb-2`,
+                                { color: colors.warning.dark },
+                            ]}
+                        >
+                            ⚠️ Đơn đang được chuẩn bị/giao — yêu cầu sẽ được gửi đến shop để xác nhận.
+                        </Text>
+                    )}
+                    <TextInput
+                        placeholder="Nhập lý do hủy đơn hàng..."
+                        value={cancellationReason}
+                        onChangeText={setCancellationReason}
+                        multiline
+                        numberOfLines={3}
+                        placeholderTextColor={colors.text.hint}
+                        style={[
+                            tw`rounded-xl px-3 py-3 mb-3`,
+                            {
+                                borderWidth: 1,
+                                borderColor: colors.border.light,
+                                color: colors.text.primary,
+                                minHeight: 80,
+                            },
+                        ]}
+                        textAlignVertical="top"
+                    />
+                    <View style={tw`flex-row`}>
+                        <Button
+                            mode="outlined"
+                            onPress={() => {
+                                setCancelModalVisible(false);
+                                setCancellationReason("");
+                            }}
+                            style={tw`flex-1 mr-2 rounded-xl`}
+                        >
+                            Hủy bỏ
+                        </Button>
+                        <Button
+                            mode="contained"
+                            onPress={handleCancelOrder}
+                            loading={isCanceling}
+                            style={[
+                                tw`flex-1 rounded-xl`,
+                                { backgroundColor: colors.error.main },
+                            ]}
+                        >
+                            Xác nhận
+                        </Button>
+                    </View>
+                </Modal>
+            </Portal>
         </SafeAreaView>
     );
 };
+
+const Row: React.FC<{ label: string; value: string; bold?: boolean }> = ({
+    label,
+    value,
+    bold,
+}) => (
+    <View style={tw`flex-row justify-between py-1`}>
+        <Text style={{ color: colors.text.secondary }}>{label}</Text>
+        <Text
+            style={[
+                bold ? tw`font-semibold` : null,
+                { color: colors.text.primary },
+            ]}
+        >
+            {value}
+        </Text>
+    </View>
+);

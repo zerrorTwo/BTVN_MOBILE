@@ -1,29 +1,52 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
     View,
     Text,
     FlatList,
     RefreshControl,
     TouchableOpacity,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ActivityIndicator, Button } from 'react-native-paper';
-import { useSelector } from 'react-redux';
-import tw from 'twrnc';
-import { OrderCard } from '../components/OrderCard';
-import { useGetOrdersQuery } from '../services/api/orderApi';
-import type { RootState } from '../store';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator } from "react-native-paper";
+import { useSelector } from "react-redux";
+import tw from "twrnc";
+import { MotiView } from "moti";
+import { OrderCard } from "../components/OrderCard";
+import { EmptyState } from "../components/EmptyState";
+import { OrderCardSkeleton } from "../components/Skeleton";
+import { useGetOrdersQuery } from "../services/api/orderApi";
+import type { RootState } from "../store";
+import { colors } from "../theme";
 
-type OrderStatus = 'ALL' | 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
+type OrderStatus =
+    | "ALL"
+    | "PENDING"
+    | "CONFIRMED"
+    | "PREPARING"
+    | "SHIPPING"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "CANCEL_REQUESTED";
+
+const TABS: { label: string; value: OrderStatus }[] = [
+    { label: "Tất cả", value: "ALL" },
+    { label: "Chờ xác nhận", value: "PENDING" },
+    { label: "Đã xác nhận", value: "CONFIRMED" },
+    { label: "Đang chuẩn bị", value: "PREPARING" },
+    { label: "Đang giao", value: "SHIPPING" },
+    { label: "Hoàn thành", value: "COMPLETED" },
+    { label: "Yêu cầu hủy", value: "CANCEL_REQUESTED" },
+    { label: "Đã hủy", value: "CANCELLED" },
+];
 
 export const OrdersScreen = ({ navigation }: any) => {
     const { user } = useSelector((state: RootState) => state.auth);
     const [page, setPage] = useState(1);
-    const [selectedTab, setSelectedTab] = useState<OrderStatus>('ALL');
+    const [selectedTab, setSelectedTab] = useState<OrderStatus>("ALL");
     const [allOrders, setAllOrders] = useState<any[]>([]);
     const { data, isLoading, refetch, isFetching } = useGetOrdersQuery(
         { page, limit: 10 },
-        { skip: !user }
+        { skip: !user },
     );
     const [refreshing, setRefreshing] = useState(false);
 
@@ -33,9 +56,11 @@ export const OrdersScreen = ({ navigation }: any) => {
             if (page === 1) {
                 setAllOrders(newOrders);
             } else {
-                setAllOrders(prev => {
+                setAllOrders((prev) => {
                     const existingIds = new Set(prev.map((o: any) => o.id));
-                    const uniqueNew = newOrders.filter((o: any) => !existingIds.has(o.id));
+                    const uniqueNew = newOrders.filter(
+                        (o: any) => !existingIds.has(o.id),
+                    );
                     return [...prev, ...uniqueNew];
                 });
             }
@@ -53,132 +78,134 @@ export const OrdersScreen = ({ navigation }: any) => {
 
     const handleLoadMore = () => {
         if (data && page < data.pagination.totalPages && !isFetching) {
-            setPage(prev => prev + 1);
+            setPage((prev) => prev + 1);
         }
     };
 
-    const handleOrderPress = (orderId: number) => {
-        navigation.navigate("OrderDetail", { orderId });
-    };
-
-    const handleTabChange = (tab: OrderStatus) => {
-        setSelectedTab(tab);
-    };
-
-    const tabs = [
-        { label: "Tất cả", value: "ALL" },
-        { label: "Chờ xác nhận", value: "PENDING" },
-        { label: "Đã xác nhận", value: "CONFIRMED" },
-        { label: "Đang chuẩn bị", value: "PREPARING" },
-        { label: "Đang giao", value: "SHIPPING" },
-        { label: "Hoàn thành", value: "COMPLETED" },
-        { label: "Đã hủy", value: "CANCELLED" },
-    ];
-
     const filteredOrders = allOrders.filter((order: any) =>
-        selectedTab === "ALL" ? true : order.status === selectedTab
+        selectedTab === "ALL" ? true : order.status === selectedTab,
     );
 
     if (!user) {
         return (
-            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-6`} edges={["bottom"]}>
-                <Text style={tw`text-6xl mb-4`}>🔒</Text>
-                <Text style={tw`text-xl font-bold text-gray-800 text-center`}>
-                    Đăng nhập để xem đơn hàng
-                </Text>
-                <Text style={tw`text-sm text-gray-500 mt-2 text-center`}>
-                    Bạn cần đăng nhập để theo dõi đơn hàng của mình
-                </Text>
-                <Button
-                    mode="contained"
-                    onPress={() => navigation.navigate('Login')}
-                    style={tw`mt-6 rounded-xl`}
-                    buttonColor="#0B5ED7"
-                >
-                    Đăng nhập ngay
-                </Button>
+            <SafeAreaView
+                style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+                edges={["bottom"]}
+            >
+                <EmptyState
+                    iconName="lock-closed-outline"
+                    title="Đăng nhập để xem đơn hàng"
+                    message="Bạn cần đăng nhập để theo dõi đơn hàng của mình"
+                    buttonText="Đăng nhập ngay"
+                    onButtonPress={() => navigation.navigate("Login")}
+                />
             </SafeAreaView>
         );
     }
 
-    const renderEmpty = () => (
-        <View style={tw`flex-1 justify-center items-center py-20 px-6`}>
-            <Text style={tw`text-6xl mb-4`}>📦</Text>
-            <Text style={tw`text-xl font-bold text-gray-800 text-center`}>
-                Chưa có đơn hàng
-            </Text>
-            <Text style={tw`text-sm text-gray-500 mt-2 text-center`}>
-                {selectedTab === "ALL"
-                    ? "Bạn chưa có đơn hàng nào. Hãy mua sắm ngay!"
-                    : `Không có đơn hàng ${tabs.find((t) => t.value === selectedTab)?.label.toLowerCase()}`}
-            </Text>
-            <Button
-                mode="contained"
-                onPress={() => navigation.navigate("Home", { screen: "HomeTab" })}
-                style={tw`mt-6 rounded-xl`}
-                buttonColor="#0B5ED7"
-            >
-                Mua sắm ngay
-            </Button>
-        </View>
-    );
-
-    return (
-        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["bottom"]}>
-            <View style={tw`bg-white`}>
-                <FlatList
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    data={tabs}
-                    keyExtractor={(item) => item.value}
-                    contentContainerStyle={tw`px-2 py-2`}
-                    renderItem={({ item }) => (
+    const renderTabs = () => (
+        <View style={{ backgroundColor: colors.background.paper }}>
+            <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={TABS}
+                keyExtractor={(item) => item.value}
+                contentContainerStyle={tw`px-2 py-2`}
+                renderItem={({ item }) => {
+                    const active = selectedTab === item.value;
+                    return (
                         <TouchableOpacity
-                            onPress={() => handleTabChange(item.value as OrderStatus)}
+                            onPress={() => setSelectedTab(item.value)}
                             style={[
                                 tw`px-4 py-2 mr-2 rounded-full`,
-                                selectedTab === item.value
-                                    ? tw`bg-[#0B5ED7]`
-                                    : tw`bg-gray-100`,
+                                {
+                                    backgroundColor: active
+                                        ? colors.primary.main
+                                        : colors.background.default,
+                                },
                             ]}
+                            activeOpacity={0.8}
                         >
                             <Text
                                 style={[
-                                    tw`font-semibold`,
-                                    selectedTab === item.value
-                                        ? tw`text-white`
-                                        : tw`text-gray-600`,
+                                    tw`font-semibold text-sm`,
+                                    { color: active ? "#fff" : colors.text.secondary },
                                 ]}
                             >
                                 {item.label}
                             </Text>
                         </TouchableOpacity>
-                    )}
-                />
-            </View>
+                    );
+                }}
+            />
+        </View>
+    );
+
+    return (
+        <SafeAreaView
+            style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+            edges={["bottom"]}
+        >
+            {renderTabs()}
 
             {isLoading ? (
-                <View style={tw`flex-1 justify-center items-center`}>
-                    <ActivityIndicator size="large" color="#0B5ED7" />
+                <View style={tw`p-4`}>
+                    <OrderCardSkeleton />
+                    <OrderCardSkeleton />
+                    <OrderCardSkeleton />
                 </View>
             ) : (
                 <FlatList
                     data={filteredOrders}
                     keyExtractor={(item: any) => item.id.toString()}
-                    renderItem={({ item }: any) => (
-                        <OrderCard order={item} onPress={handleOrderPress} />
+                    renderItem={({ item, index }: any) => (
+                        <OrderCard
+                            order={item}
+                            onPress={(orderId) =>
+                                navigation.navigate("OrderDetail", { orderId })
+                            }
+                            index={index}
+                        />
                     )}
-                    contentContainerStyle={filteredOrders.length === 0 ? tw`flex-1` : tw`p-4`}
-                    ListEmptyComponent={renderEmpty}
+                    contentContainerStyle={
+                        filteredOrders.length === 0 ? tw`flex-1` : tw`p-4`
+                    }
+                    ListEmptyComponent={
+                        <MotiView
+                            from={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ type: "timing", duration: 300 }}
+                            style={tw`flex-1`}
+                        >
+                            <EmptyState
+                                iconName="receipt-outline"
+                                title="Chưa có đơn hàng"
+                                message={
+                                    selectedTab === "ALL"
+                                        ? "Bạn chưa có đơn hàng nào. Hãy mua sắm ngay!"
+                                        : `Không có đơn hàng ${TABS.find((t) => t.value === selectedTab)?.label.toLowerCase()}`
+                                }
+                                buttonText="Mua sắm ngay"
+                                onButtonPress={() =>
+                                    navigation.navigate("Home", { screen: "HomeTab" })
+                                }
+                            />
+                        </MotiView>
+                    }
                     refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            tintColor={colors.primary.main}
+                            colors={[colors.primary.main]}
+                        />
                     }
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.5}
                     ListFooterComponent={
                         isFetching && !isLoading ? (
                             <View style={tw`py-4`}>
-                                <ActivityIndicator size="small" color="#0B5ED7" />
+                                <ActivityIndicator size="small" color={colors.primary.main} />
                             </View>
                         ) : null
                     }

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { User, Product, Category, Order, OrderItem, Coupon, Review } from "../models";
 import { CouponType } from "../models/coupon.model";
 import { OrderStatus } from "../models/order.model";
+import { setOrderStatus, OrderError } from "../services/order.service";
 
 const ORDER_STATUS_GROUPS: OrderStatus[] = [
   OrderStatus.PENDING,
@@ -293,26 +294,22 @@ export const updateAdminOrderStatus = async (
       return;
     }
 
-    const order = await Order.findByPk(orderId);
-    if (!order) {
-      res.status(404).json({
-        success: false,
-        message: "Order not found",
+    try {
+      const order = await setOrderStatus(orderId, status, {
+        cancellationReason: reason,
       });
-      return;
+      res.json({
+        success: true,
+        message: "Order status updated",
+        data: { id: order.id, status: order.status },
+      });
+    } catch (err) {
+      if (err instanceof OrderError) {
+        res.status(err.statusCode).json({ success: false, message: err.message });
+        return;
+      }
+      throw err;
     }
-
-    order.status = status;
-    if (reason) {
-      order.cancellationReason = reason;
-    }
-    await order.save();
-
-    res.json({
-      success: true,
-      message: "Order status updated",
-      data: { id: order.id, status: order.status },
-    });
   } catch (error) {
     res.status(500).json({
       success: false,

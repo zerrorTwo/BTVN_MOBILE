@@ -8,6 +8,7 @@ import Order from "./order.model";
 import OrderItem from "./order-item.model";
 import Coupon from "./coupon.model";
 import Review from "./review.model";
+import Payment from "./payment.model";
 
 User.hasOne(Cart, { foreignKey: "userId", as: "cart" });
 Cart.belongsTo(User, { foreignKey: "userId", as: "user" });
@@ -26,6 +27,9 @@ OrderItem.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
 OrderItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
 Product.hasMany(OrderItem, { foreignKey: "productId", as: "orderItems" });
+
+Order.hasMany(Payment, { foreignKey: "orderId", as: "payments" });
+Payment.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 User.hasMany(Review, { foreignKey: "userId", as: "reviews" });
 Review.belongsTo(User, { foreignKey: "userId", as: "user" });
 Product.hasMany(Review, { foreignKey: "productId", as: "reviews" });
@@ -37,6 +41,6 @@ Product.belongsTo(Brand, { foreignKey: "brandId", as: "brand" });
 Category.hasMany(Category, { foreignKey: "parentId", as: "subCategories" });
 Category.belongsTo(Category, { foreignKey: "parentId", as: "parentCategory" });
 
-export { User, Product, Category, Brand, Cart, CartItem, Order, OrderItem, Coupon, Review };
+export { User, Product, Category, Brand, Cart, CartItem, Order, OrderItem, Coupon, Review, Payment };
 
 export default sequelize;

@@ -30,6 +30,7 @@ import CompareScreen from '../screens/CompareScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import OrderTrackingScreen from '../screens/OrderTrackingScreen';
 import AppSplashScreen from '../screens/AppSplashScreen';
+import { PaymentWebViewScreen } from '../screens/PaymentWebViewScreen';
 
 export type RootStackParamList = {
     Intro: undefined;
@@ -55,6 +56,7 @@ export type RootStackParamList = {
     Orders: undefined;
     OrderDetail: { orderId: number };
     OrderTracking: { orderId: number };
+    PaymentWebView: { orderId: number; payUrl: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -171,6 +173,11 @@ export default function AppNavigator() {
                     name="OrderTracking"
                     component={OrderTrackingScreen}
                     options={{ title: 'Theo dõi đơn hàng' }}
+                />
+                <Stack.Screen
+                    name="PaymentWebView"
+                    component={PaymentWebViewScreen}
+                    options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="EditProfile"

@@ -18,6 +18,13 @@ export enum PaymentMethod {
   ZALOPAY = "ZALOPAY",
 }
 
+export enum PaymentStatus {
+  UNPAID = "UNPAID",
+  PAID = "PAID",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED",
+}
+
 export interface OrderAttributes {
   id?: number;
   userId: number;
@@ -25,6 +32,8 @@ export interface OrderAttributes {
   total: number;
   discount: number;
   paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  transId?: string | null;
   status: OrderStatus;
   shippingAddress: string;
   receiverName: string;
@@ -45,6 +54,8 @@ export class Order
   public total!: number;
   public discount!: number;
   public paymentMethod!: PaymentMethod;
+  public paymentStatus!: PaymentStatus;
+  public transId!: string | null;
   public status!: OrderStatus;
   public shippingAddress!: string;
   public receiverName!: string;
@@ -88,6 +99,16 @@ Order.init(
     paymentMethod: {
       type: DataTypes.ENUM(...Object.values(PaymentMethod)),
       allowNull: false,
+    },
+    paymentStatus: {
+      type: DataTypes.ENUM(...Object.values(PaymentStatus)),
+      allowNull: false,
+      defaultValue: PaymentStatus.UNPAID,
+    },
+    transId: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: null,
     },
     status: {
       type: DataTypes.ENUM(...Object.values(OrderStatus)),

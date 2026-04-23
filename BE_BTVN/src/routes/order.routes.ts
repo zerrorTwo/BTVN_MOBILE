@@ -8,73 +8,40 @@ import {
   requestCancelOrder,
   updateOrderStatus,
 } from "../controllers/order.controller";
-import { authenticate } from "../middleware/auth.middleware";
+import { authenticate, requireAdmin } from "../middleware/auth.middleware";
 import { PaymentMethod, OrderStatus } from "../models/order.model";
 
 const router = Router();
 
-router.post(
-  "/checkout",
-  authenticate,
-  [
-    body("paymentMethod")
-      .notEmpty()
-      .withMessage("Payment method is required")
-      .isIn(Object.values(PaymentMethod))
-      .withMessage("Invalid payment method"),
-    body("shippingAddress")
-      .notEmpty()
-      .withMessage("Shipping address is required")
-      .isLength({ max: 500 })
-      .withMessage("Shipping address must not exceed 500 characters"),
-    body("receiverName")
-      .notEmpty()
-      .withMessage("Receiver name is required")
-      .isLength({ max: 100 })
-      .withMessage("Receiver name must not exceed 100 characters"),
-    body("receiverPhone")
-      .notEmpty()
-      .withMessage("Receiver phone is required")
-      .matches(/^(0|\+84)[0-9]{9,10}$/)
-      .withMessage("Invalid Vietnamese phone number format"),
-    body("note")
-      .optional()
-      .isLength({ max: 500 })
-      .withMessage("Note must not exceed 500 characters"),
-  ],
-  checkout,
-);
-router.post(
-  "/",
-  authenticate,
-  [
-    body("paymentMethod")
-      .notEmpty()
-      .withMessage("Payment method is required")
-      .isIn(Object.values(PaymentMethod))
-      .withMessage("Invalid payment method"),
-    body("shippingAddress")
-      .notEmpty()
-      .withMessage("Shipping address is required")
-      .isLength({ max: 500 })
-      .withMessage("Shipping address must not exceed 500 characters"),
-    body("receiverName")
-      .notEmpty()
-      .withMessage("Receiver name is required")
-      .isLength({ max: 100 })
-      .withMessage("Receiver name must not exceed 100 characters"),
-    body("receiverPhone")
-      .notEmpty()
-      .withMessage("Receiver phone is required")
-      .matches(/^(0|\+84)[0-9]{9,10}$/)
-      .withMessage("Invalid Vietnamese phone number format"),
-    body("note")
-      .optional()
-      .isLength({ max: 500 })
-      .withMessage("Note must not exceed 500 characters"),
-  ],
-  checkout,
-);
+const checkoutValidators = [
+  body("paymentMethod")
+    .notEmpty()
+    .withMessage("Payment method is required")
+    .isIn(Object.values(PaymentMethod))
+    .withMessage("Invalid payment method"),
+  body("shippingAddress")
+    .notEmpty()
+    .withMessage("Shipping address is required")
+    .isLength({ max: 500 })
+    .withMessage("Shipping address must not exceed 500 characters"),
+  body("receiverName")
+    .notEmpty()
+    .withMessage("Receiver name is required")
+    .isLength({ max: 100 })
+    .withMessage("Receiver name must not exceed 100 characters"),
+  body("receiverPhone")
+    .notEmpty()
+    .withMessage("Receiver phone is required")
+    .matches(/^(0|\+84)[0-9]{9,10}$/)
+    .withMessage("Invalid Vietnamese phone number format"),
+  body("note")
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage("Note must not exceed 500 characters"),
+];
+
+router.post("/checkout", authenticate, checkoutValidators, checkout);
+router.post("/", authenticate, checkoutValidators, checkout);
 
 router.get("/", authenticate, getOrders);
 
@@ -129,6 +96,7 @@ router.post(
 router.put(
   "/:id/status",
   authenticate,
+  requireAdmin,
   [
     param("id").isInt({ min: 1 }).withMessage("Invalid order ID"),
     body("status")

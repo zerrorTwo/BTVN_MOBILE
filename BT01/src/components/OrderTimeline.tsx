@@ -1,8 +1,10 @@
 import React, { memo, useMemo } from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { MotiView } from "moti";
 import tw from "twrnc";
 import { OrderStatus } from "../types/order.types";
+import { colors } from "../theme";
 
 interface OrderTimelineProps {
     currentStatus: OrderStatus;
@@ -29,67 +31,126 @@ const OrderTimelineComponent: React.FC<OrderTimelineProps> = ({
 }) => {
     const currentIndex = useMemo(
         () => TIMELINE_STEPS.findIndex((step) => step.status === currentStatus),
-        [currentStatus]
+        [currentStatus],
     );
 
     const formattedDate = useMemo(
         () => new Date(createdAt).toLocaleString("vi-VN"),
-        [createdAt]
+        [createdAt],
     );
 
     const isCancelled = useMemo(
-        () => currentStatus === OrderStatus.CANCELLED || currentStatus === OrderStatus.CANCEL_REQUESTED,
-        [currentStatus]
+        () =>
+            currentStatus === OrderStatus.CANCELLED ||
+            currentStatus === OrderStatus.CANCEL_REQUESTED,
+        [currentStatus],
     );
 
     if (isCancelled) {
         return (
-            <View style={tw`bg-red-50 p-4 rounded-lg mb-4`}>
-                <View style={tw`flex-row items-center`}>
-                    <Ionicons name="close-circle" size={24} color="#F44336" />
-                    <Text style={tw`text-base font-semibold text-red-600 ml-2`}>
+            <MotiView
+                from={{ opacity: 0, translateY: 8 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{ type: "timing", duration: 300 }}
+                style={[
+                    tw`p-4 rounded-2xl mb-4 flex-row items-center`,
+                    { backgroundColor: "#FDE8E7" },
+                ]}
+            >
+                <View
+                    style={[
+                        tw`w-10 h-10 rounded-full items-center justify-center mr-3`,
+                        { backgroundColor: colors.error.main },
+                    ]}
+                >
+                    <Ionicons name="close" size={22} color="#fff" />
+                </View>
+                <View style={tw`flex-1`}>
+                    <Text
+                        style={[tw`text-base font-semibold`, { color: colors.error.dark }]}
+                    >
                         {currentStatus === OrderStatus.CANCELLED
                             ? "Đơn hàng đã hủy"
                             : "Đang chờ xác nhận hủy"}
                     </Text>
+                    <Text style={[tw`text-xs mt-1`, { color: colors.error.main }]}>
+                        {formattedDate}
+                    </Text>
                 </View>
-            </View>
+            </MotiView>
         );
     }
 
     return (
-        <View style={tw`bg-white p-4 rounded-lg mb-4`}>
+        <View
+            style={[
+                tw`p-4 rounded-2xl mb-4`,
+                { backgroundColor: colors.background.paper },
+            ]}
+        >
             {TIMELINE_STEPS.map((step, index) => {
                 const isCompleted = index <= currentIndex;
                 const isActive = index === currentIndex;
 
                 return (
-                    <View key={step.status}>
+                    <MotiView
+                        key={step.status}
+                        from={{ opacity: 0, translateX: -12 }}
+                        animate={{ opacity: 1, translateX: 0 }}
+                        transition={{ type: "timing", duration: 260, delay: index * 60 }}
+                    >
                         <View style={tw`flex-row items-center`}>
-                            <View
-                                style={[
-                                    tw`w-10 h-10 rounded-full items-center justify-center`,
-                                    isCompleted ? tw`bg-[#26AA99]` : tw`bg-gray-200`,
-                                ]}
-                            >
-                                <Ionicons
-                                    name={step.icon as any}
-                                    size={20}
-                                    color={isCompleted ? "#FFF" : "#999"}
-                                />
+                            <View style={tw`relative`}>
+                                <View
+                                    style={[
+                                        tw`w-10 h-10 rounded-full items-center justify-center`,
+                                        {
+                                            backgroundColor: isCompleted
+                                                ? colors.success.main
+                                                : colors.border.light,
+                                        },
+                                    ]}
+                                >
+                                    <Ionicons
+                                        name={step.icon as any}
+                                        size={20}
+                                        color={isCompleted ? "#fff" : colors.text.hint}
+                                    />
+                                </View>
+                                {isActive && (
+                                    <MotiView
+                                        from={{ scale: 0.6, opacity: 0.6 }}
+                                        animate={{ scale: 1.5, opacity: 0 }}
+                                        transition={{
+                                            type: "timing",
+                                            duration: 1200,
+                                            loop: true,
+                                        }}
+                                        style={[
+                                            tw`absolute w-10 h-10 rounded-full`,
+                                            { backgroundColor: colors.success.main },
+                                        ]}
+                                    />
+                                )}
                             </View>
 
                             <View style={tw`flex-1 ml-3`}>
                                 <Text
                                     style={[
                                         tw`font-semibold`,
-                                        isCompleted ? tw`text-gray-800` : tw`text-gray-400`,
+                                        {
+                                            color: isCompleted
+                                                ? colors.text.primary
+                                                : colors.text.hint,
+                                        },
                                     ]}
                                 >
                                     {step.label}
                                 </Text>
                                 {isActive && (
-                                    <Text style={tw`text-xs text-gray-500 mt-1`}>
+                                    <Text
+                                        style={[tw`text-xs mt-1`, { color: colors.text.secondary }]}
+                                    >
                                         {formattedDate}
                                     </Text>
                                 )}
@@ -100,11 +161,15 @@ const OrderTimelineComponent: React.FC<OrderTimelineProps> = ({
                             <View
                                 style={[
                                     tw`w-0.5 h-8 ml-5`,
-                                    isCompleted ? tw`bg-[#26AA99]` : tw`bg-gray-200`,
+                                    {
+                                        backgroundColor: isCompleted
+                                            ? colors.success.main
+                                            : colors.border.light,
+                                    },
                                 ]}
                             />
                         )}
-                    </View>
+                    </MotiView>
                 );
             })}
         </View>

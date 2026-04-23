@@ -7,6 +7,7 @@ import type {
   OrderDetailResponse,
   CancelOrderRequest,
   CancelOrderResponse,
+  InitMomoResponse,
 } from "../../types/order.types";
 import { API_BASE_URL } from "../../config";
 
@@ -78,6 +79,13 @@ export const orderApi = createApi({
         { type: "OrderDetail", id },
       ],
     }),
+
+    initMomoPayment: builder.mutation<InitMomoResponse, number>({
+      query: (orderId) => ({
+        url: `/api/v1/payments/momo/init/${orderId}`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -87,4 +95,5 @@ export const {
   useGetOrderByIdQuery,
   useCancelOrderMutation,
   useRequestCancelOrderMutation,
+  useInitMomoPaymentMutation,
 } = orderApi;

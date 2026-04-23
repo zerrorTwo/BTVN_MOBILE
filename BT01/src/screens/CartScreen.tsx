@@ -5,21 +5,26 @@ import {
     ScrollView,
     TouchableOpacity,
     RefreshControl,
-    Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Button, ActivityIndicator, Snackbar, Portal, Modal } from "react-native-paper";
-import { useSelector } from 'react-redux';
+import { Button, Portal, Modal } from "react-native-paper";
+import { useSelector } from "react-redux";
 import tw from "twrnc";
 import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
+import { MotiView } from "moti";
+import Toast from "react-native-toast-message";
 import { CartItem } from "../components/CartItem";
+import { EmptyState } from "../components/EmptyState";
+import { CartItemSkeleton } from "../components/Skeleton";
 import {
     useGetCartQuery,
     useUpdateCartItemMutation,
     useRemoveCartItemMutation,
     useClearCartMutation,
 } from "../services/api/cartApi";
-import type { RootState } from '../store';
+import type { RootState } from "../store";
+import { colors } from "../theme";
 
 export const CartScreen = ({ navigation }: any) => {
     const { user } = useSelector((state: RootState) => state.auth);
@@ -30,9 +35,7 @@ export const CartScreen = ({ navigation }: any) => {
     const [removeCartItem] = useRemoveCartItemMutation();
     const [clearCart] = useClearCartMutation();
     const [refreshing, setRefreshing] = useState(false);
-    const [snackMessage, setSnackMessage] = useState("");
 
-    // Modal state
     const [modalVisible, setModalVisible] = useState(false);
     const [modalConfig, setModalConfig] = useState<{
         title: string;
@@ -51,17 +54,21 @@ export const CartScreen = ({ navigation }: any) => {
         setRefreshing(true);
         await refetch();
         setRefreshing(false);
-    }, [refetch]);
+    }, [refetch, user]);
 
     const handleUpdateQuantity = useCallback(
         async (itemId: number, quantity: number) => {
             try {
                 await updateCartItem({ itemId, data: { quantity } }).unwrap();
             } catch (error: any) {
-                setSnackMessage(error.data?.message || "Không thể cập nhật số lượng");
+                Toast.show({
+                    type: "error",
+                    text1: "Không thể cập nhật",
+                    text2: error.data?.message || "Vui lòng thử lại",
+                });
             }
         },
-        [updateCartItem]
+        [updateCartItem],
     );
 
     const handleRemoveItem = useCallback(
@@ -73,16 +80,23 @@ export const CartScreen = ({ navigation }: any) => {
                 onConfirm: async () => {
                     try {
                         await removeCartItem(itemId).unwrap();
-                        setSnackMessage("Đã xóa sản phẩm khỏi giỏ hàng");
+                        Toast.show({
+                            type: "success",
+                            text1: "Đã xóa sản phẩm",
+                        });
                     } catch (error: any) {
-                        setSnackMessage(error.data?.message || "Không thể xóa sản phẩm");
+                        Toast.show({
+                            type: "error",
+                            text1: "Không thể xóa",
+                            text2: error.data?.message,
+                        });
                     }
                     setModalVisible(false);
                 },
             });
             setModalVisible(true);
         },
-        [removeCartItem]
+        [removeCartItem],
     );
 
     const handleClearCart = useCallback(() => {
@@ -93,9 +107,16 @@ export const CartScreen = ({ navigation }: any) => {
             onConfirm: async () => {
                 try {
                     await clearCart().unwrap();
-                    setSnackMessage("Đã xóa toàn bộ giỏ hàng");
+                    Toast.show({
+                        type: "success",
+                        text1: "Đã xóa giỏ hàng",
+                    });
                 } catch (error: any) {
-                    setSnackMessage(error.data?.message || "Không thể xóa giỏ hàng");
+                    Toast.show({
+                        type: "error",
+                        text1: "Không thể xóa",
+                        text2: error.data?.message,
+                    });
                 }
                 setModalVisible(false);
             },
@@ -105,7 +126,7 @@ export const CartScreen = ({ navigation }: any) => {
 
     const handleCheckout = useCallback(() => {
         if (!data?.data || data.data.items.length === 0) {
-            setSnackMessage("Giỏ hàng đang trống");
+            Toast.show({ type: "warning", text1: "Giỏ hàng trống" });
             return;
         }
         navigation.navigate("Checkout");
@@ -113,32 +134,50 @@ export const CartScreen = ({ navigation }: any) => {
 
     if (!user) {
         return (
-            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-6`} edges={["top", "bottom"]}>
+            <SafeAreaView
+                style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+                edges={["top", "bottom"]}
+            >
                 <StatusBar style="dark" />
-                <Text style={tw`text-6xl mb-4`}>🔒</Text>
-                <Text style={tw`text-xl font-bold text-gray-800 text-center`}>
-                    Đăng nhập để xem giỏ hàng
-                </Text>
-                <Text style={tw`text-sm text-gray-500 mt-2 text-center`}>
-                    Bạn cần đăng nhập để quản lý giỏ hàng của mình
-                </Text>
-                <Button
-                    mode="contained"
-                    onPress={() => navigation.navigate('Login')}
-                    style={tw`mt-6 rounded-xl`}
-                    buttonColor="#0B5ED7"
-                >
-                    Đăng nhập ngay
-                </Button>
+                <EmptyState
+                    iconName="lock-closed-outline"
+                    iconColor={colors.primary.main}
+                    title="Đăng nhập để xem giỏ hàng"
+                    message="Bạn cần đăng nhập để quản lý giỏ hàng của mình"
+                    buttonText="Đăng nhập ngay"
+                    onButtonPress={() => navigation.navigate("Login")}
+                />
             </SafeAreaView>
         );
     }
 
     if (isLoading) {
         return (
-            <SafeAreaView style={tw`flex-1 justify-center items-center bg-gray-50`} edges={["top", "bottom"]}>
+            <SafeAreaView
+                style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+                edges={["top", "bottom"]}
+            >
                 <StatusBar style="dark" />
-                <ActivityIndicator size="large" color="#0B5ED7" />
+                <View
+                    style={[
+                        tw`px-4 py-3 border-b`,
+                        {
+                            backgroundColor: colors.background.paper,
+                            borderColor: colors.border.light,
+                        },
+                    ]}
+                >
+                    <Text
+                        style={[tw`text-lg font-bold`, { color: colors.text.primary }]}
+                    >
+                        Giỏ hàng
+                    </Text>
+                </View>
+                <View style={tw`px-4 py-3`}>
+                    <CartItemSkeleton />
+                    <CartItemSkeleton />
+                    <CartItemSkeleton />
+                </View>
             </SafeAreaView>
         );
     }
@@ -148,120 +187,180 @@ export const CartScreen = ({ navigation }: any) => {
 
     if (isEmpty) {
         return (
-            <SafeAreaView style={tw`flex-1 bg-gray-50 justify-center items-center px-6`} edges={["top", "bottom"]}>
+            <SafeAreaView
+                style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+                edges={["top", "bottom"]}
+            >
                 <StatusBar style="dark" />
-                <Text style={tw`text-6xl mb-4`}>🛒</Text>
-                <Text style={tw`text-xl font-bold text-gray-800 text-center`}>
-                    Giỏ hàng trống
-                </Text>
-                <Text style={tw`text-sm text-gray-500 mt-2 text-center`}>
-                    Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm
-                </Text>
-                <Button
-                    mode="contained"
-                    onPress={() => navigation.navigate("Home", { screen: "HomeTab" })}
-                    style={tw`mt-6 rounded-xl`}
-                    buttonColor="#0B5ED7"
-                >
-                    Mua sắm ngay
-                </Button>
+                <EmptyState
+                    iconName="cart-outline"
+                    iconColor={colors.primary.main}
+                    title="Giỏ hàng trống"
+                    message="Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm"
+                    buttonText="Mua sắm ngay"
+                    onButtonPress={() => navigation.navigate("Home", { screen: "HomeTab" })}
+                />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={tw`flex-1 bg-gray-50`} edges={["top", "bottom"]}>
+        <SafeAreaView
+            style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
+            edges={["top", "bottom"]}
+        >
             <StatusBar style="dark" />
-            <View style={tw`bg-white px-4 py-3 border-b border-gray-200`}>
-                <View style={tw`flex-row justify-between items-center`}>
-                    <Text style={tw`text-lg font-bold`}>
-                        Giỏ hàng ({cart.itemCount} sp)
+            <View
+                style={[
+                    tw`px-4 py-3 border-b flex-row justify-between items-center`,
+                    {
+                        backgroundColor: colors.background.paper,
+                        borderColor: colors.border.light,
+                    },
+                ]}
+            >
+                <View style={tw`flex-row items-center`}>
+                    <Ionicons name="cart" size={22} color={colors.primary.main} />
+                    <Text
+                        style={[tw`text-lg font-bold ml-2`, { color: colors.text.primary }]}
+                    >
+                        Giỏ hàng ({cart.itemCount})
                     </Text>
-                    <TouchableOpacity onPress={handleClearCart}>
-                        <Text style={tw`text-sm text-[#0B5ED7]`}>Xóa tất cả</Text>
-                    </TouchableOpacity>
                 </View>
+                <TouchableOpacity
+                    onPress={handleClearCart}
+                    style={tw`flex-row items-center`}
+                >
+                    <Ionicons name="trash-outline" size={16} color={colors.error.main} />
+                    <Text
+                        style={[tw`text-sm ml-1 font-semibold`, { color: colors.error.main }]}
+                    >
+                        Xóa tất cả
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             <ScrollView
                 style={tw`flex-1 px-4 py-2`}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={colors.primary.main}
+                        colors={[colors.primary.main]}
+                    />
                 }
             >
-                {cart.items.map((item) => (
-                    <CartItem
+                {cart.items.map((item, i) => (
+                    <MotiView
                         key={`cart-item-${item.id}`}
-                        item={item}
-                        onUpdateQuantity={handleUpdateQuantity}
-                        onRemove={handleRemoveItem}
-                    />
+                        from={{ opacity: 0, translateY: 10 }}
+                        animate={{ opacity: 1, translateY: 0 }}
+                        transition={{ type: "timing", duration: 220, delay: i * 35 }}
+                    >
+                        <CartItem
+                            item={item}
+                            onUpdateQuantity={handleUpdateQuantity}
+                            onRemove={handleRemoveItem}
+                        />
+                    </MotiView>
                 ))}
+                <View style={tw`h-6`} />
             </ScrollView>
 
-            <View style={tw`bg-white px-4 py-4 border-t border-gray-200`}>
+            <MotiView
+                from={{ translateY: 40, opacity: 0 }}
+                animate={{ translateY: 0, opacity: 1 }}
+                transition={{ type: "timing", duration: 300 }}
+                style={[
+                    tw`px-4 py-4 border-t`,
+                    {
+                        backgroundColor: colors.background.paper,
+                        borderColor: colors.border.light,
+                    },
+                ]}
+            >
                 <View style={tw`flex-row justify-between items-center mb-3`}>
-                    <Text style={tw`text-base text-gray-600`}>Tạm tính</Text>
-                    <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
+                    <Text
+                        style={[tw`text-sm`, { color: colors.text.secondary }]}
+                    >
+                        Tạm tính ({cart.itemCount} sản phẩm)
+                    </Text>
+                    <Text
+                        style={[tw`text-2xl font-bold`, { color: colors.primary.main }]}
+                    >
                         ₫{cart.subtotal.toLocaleString()}
                     </Text>
                 </View>
                 <Button
                     mode="contained"
                     onPress={handleCheckout}
-                    style={tw`bg-[#0B5ED7] py-1`}
-                    labelStyle={tw`text-base font-semibold`}
+                    icon="arrow-right"
+                    contentStyle={tw`flex-row-reverse py-1`}
+                    style={[
+                        tw`rounded-xl`,
+                        { backgroundColor: colors.primary.main },
+                    ]}
+                    labelStyle={tw`text-base font-semibold text-white`}
                 >
-                    Thanh toán ({cart.itemCount} sản phẩm)
+                    Tiến hành thanh toán
                 </Button>
-            </View>
+            </MotiView>
 
             <Portal>
                 <Modal
                     visible={modalVisible}
                     onDismiss={() => setModalVisible(false)}
-                    contentContainerStyle={tw`bg-white mx-10 p-5 rounded-2xl`}
+                    contentContainerStyle={[
+                        tw`mx-8 p-6 rounded-3xl`,
+                        { backgroundColor: colors.background.paper },
+                    ]}
                 >
-                    <Text style={tw`text-lg font-bold text-gray-800 mb-2`}>
+                    <View
+                        style={[
+                            tw`w-14 h-14 rounded-full items-center justify-center self-center mb-4`,
+                            { backgroundColor: "#FDE8E7" },
+                        ]}
+                    >
+                        <Ionicons name="warning" size={28} color={colors.error.main} />
+                    </View>
+                    <Text
+                        style={[
+                            tw`text-lg font-bold mb-2 text-center`,
+                            { color: colors.text.primary },
+                        ]}
+                    >
                         {modalConfig.title}
                     </Text>
-                    <Text style={tw`text-gray-600 mb-6 text-base`}>
+                    <Text
+                        style={[
+                            tw`mb-6 text-center`,
+                            { color: colors.text.secondary, fontSize: 14 },
+                        ]}
+                    >
                         {modalConfig.message}
                     </Text>
-                    <View style={tw`flex-row justify-end`}>
+                    <View style={tw`flex-row`}>
                         <Button
-                            mode="text"
+                            mode="outlined"
                             onPress={() => setModalVisible(false)}
-                            style={tw`mr-2`}
-                            textColor="#666"
+                            style={tw`flex-1 mr-2 rounded-xl`}
+                            textColor={colors.text.secondary}
                         >
                             Hủy
                         </Button>
                         <Button
                             mode="contained"
                             onPress={modalConfig.onConfirm}
-                            buttonColor="#0B5ED7"
-                            style={tw`rounded-lg`}
+                            style={[tw`flex-1 rounded-xl`, { backgroundColor: colors.error.main }]}
+                            labelStyle={tw`text-white`}
                         >
                             {modalConfig.confirmLabel}
                         </Button>
                     </View>
                 </Modal>
             </Portal>
-
-            <Snackbar
-                visible={!!snackMessage}
-                onDismiss={() => setSnackMessage("")}
-                duration={3000}
-                style={tw`mb-20`}
-                action={{
-                    label: "Đóng",
-                    onPress: () => setSnackMessage(""),
-                }}
-            >
-                {snackMessage}
-            </Snackbar>
         </SafeAreaView>
     );
 };

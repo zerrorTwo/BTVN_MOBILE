@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+dist
+tmp
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+README.md
+**/*.test.ts
+**/*.spec.ts
+.vscode
+.idea
+src/test-smoke.ts
+src/test-email.ts

@@ -1,4 +1,10 @@
 import nodemailer from "nodemailer";
+import { OrderStatus } from "../models/order.model";
+import {
+  buildOrderStatusEmail,
+  isStatusEmailEligible,
+  OrderEmailData,
+} from "../utils/order-email.template";
 
 interface EmailOptions {
   to: string;
@@ -11,13 +17,35 @@ class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    // Two modes:
+    // 1) Custom SMTP (e.g. Mailpit in Docker) when EMAIL_HOST is set.
+    // 2) Gmail service when only EMAIL_USER/EMAIL_PASSWORD are set.
+    if (process.env.EMAIL_HOST) {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT || 1025),
+        secure: process.env.EMAIL_SECURE === "true",
+        // Only authenticate when BOTH user and password are set. Mailpit
+        // and other dev inboxes accept unauthenticated SMTP.
+        auth:
+          process.env.EMAIL_USER && process.env.EMAIL_PASSWORD
+            ? {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD,
+              }
+            : undefined,
+        ignoreTLS: process.env.EMAIL_SECURE !== "true",
+        tls: { rejectUnauthorized: false },
+      });
+    } else {
+      this.transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+    }
   }
 
   /**
@@ -103,6 +131,27 @@ class EmailService {
   }
 
   /**
+   * Send order status change notification (CONFIRMED, SHIPPING).
+   * Silently no-ops for statuses that don't have a template — callers can
+   * trigger this on any status change without branching.
+   */
+  async sendOrderStatusEmail(
+    email: string,
+    status: OrderStatus,
+    data: OrderEmailData,
+  ): Promise<void> {
+    if (!isStatusEmailEligible(status)) return;
+    const built = buildOrderStatusEmail(status, data);
+    if (!built) return;
+    await this.sendEmail({
+      to: email,
+      subject: built.subject,
+      text: built.text,
+      html: built.html,
+    });
+  }
+
+  /**
    * Generic send email method
    */
   private async sendEmail(options: EmailOptions): Promise<void> {
@@ -127,15 +176,22 @@ class EmailService {
    */
   async verifyConnection(): Promise<boolean> {
     try {
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+      // Allow unauthenticated SMTP (like Mailpit) as a valid config.
+      const hasCustomSmtp = !!process.env.EMAIL_HOST;
+      const hasGmail =
+        !!process.env.EMAIL_USER && !!process.env.EMAIL_PASSWORD;
+
+      if (!hasCustomSmtp && !hasGmail) {
         console.log(
-          "⚠️  Email service running in DEVELOPMENT MODE (console logging only)",
+          "⚠️  Email service not configured (set EMAIL_HOST for SMTP, or EMAIL_USER+EMAIL_PASSWORD for Gmail)",
         );
         return true;
       }
 
       await this.transporter.verify();
-      console.log("✅ Email service connected successfully");
+      console.log(
+        `✅ Email service connected via ${hasCustomSmtp ? `SMTP ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT || 1025}` : "Gmail"}`,
+      );
       return true;
     } catch (error: any) {
       console.error("❌ Email service connection failed:", error.message);
