@@ -88,6 +88,10 @@ export default function MainTabs() {
                     borderTopWidth: 0,
                     ...shadows.lg,
                 },
+                sceneStyle: {
+                    paddingBottom: 96,
+                    backgroundColor: colors.background.default,
+                },
                 tabBarLabelStyle: {
                     fontSize: 12,
                     fontWeight: '600' as any,
@@ -113,7 +117,7 @@ export default function MainTabs() {
                 options={{
                     tabBarLabel: 'Yêu thích',
                     tabBarBadge: wishlistBadge,
-                    tabBarBadgeStyle: { backgroundColor: '#EE4D2D', color: 'white' }
+                    tabBarBadgeStyle: { backgroundColor: '#0B5ED7', color: 'white' }
                 }}
             />
             <Tab.Screen
@@ -122,7 +126,7 @@ export default function MainTabs() {
                 options={{
                     tabBarLabel: 'Giỏ hàng',
                     tabBarBadge: cartBadge,
-                    tabBarBadgeStyle: { backgroundColor: '#EE4D2D', color: 'white' }
+                    tabBarBadgeStyle: { backgroundColor: '#0B5ED7', color: 'white' }
                 }}
             />
             <Tab.Screen

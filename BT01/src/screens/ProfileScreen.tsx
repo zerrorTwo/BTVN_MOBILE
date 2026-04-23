@@ -45,7 +45,7 @@ export default function ProfileScreen({ navigation }: any) {
                 <View style={tw`flex-1 justify-center items-center bg-gray-100 px-6`}>
                     <Card style={tw`bg-white rounded-2xl w-full max-w-sm`} elevation={4}>
                         <Card.Content style={tw`items-center py-8 px-6`}>
-                            <List.Icon icon="account-lock" color="#EE4D2D" style={tw`mb-2`} />
+                            <List.Icon icon="account-lock" color="#0B5ED7" style={tw`mb-2`} />
                             <Text style={tw`text-xl font-bold text-gray-800 mb-2 text-center`}>
                                 Yêu cầu đăng nhập
                             </Text>
@@ -56,7 +56,7 @@ export default function ProfileScreen({ navigation }: any) {
                                 mode="contained"
                                 onPress={() => navigation.navigate('Login')}
                                 style={tw`rounded-xl w-full`}
-                                buttonColor="#EE4D2D"
+                                buttonColor="#0B5ED7"
                                 contentStyle={tw`py-1`}
                                 icon="login"
                             >
@@ -131,9 +131,9 @@ export default function ProfileScreen({ navigation }: any) {
 
     return (
         <Layout>
-            <ScrollView style={tw`flex-1 bg-gray-100`} contentContainerStyle={tw`pb-8`}>
+            <ScrollView style={tw`flex-1 bg-gray-100`} contentContainerStyle={tw`pb-28`}>
                 {/* Profile Header */}
-                <View style={tw`bg-[#EE4D2D] pt-8 pb-16 px-6 items-center`}>
+                <View style={tw`bg-[#0B5ED7] pt-8 pb-16 px-6 items-center`}>
                     <TouchableOpacity
                         style={tw`mb-4`}
                         onPress={() => navigation.navigate('EditProfile')}
@@ -149,16 +149,16 @@ export default function ProfileScreen({ navigation }: any) {
                                 size={100}
                                 label={getInitials(user.name)}
                                 style={tw`bg-white`}
-                                labelStyle={tw`text-[#EE4D2D] font-bold text-3xl`}
+                                labelStyle={tw`text-[#0B5ED7] font-bold text-3xl`}
                             />
                         )}
                         <View style={tw`absolute bottom-0 right-0 bg-white rounded-full p-1`}>
-                            <List.Icon icon="camera" color="#EE4D2D" style={tw`m-0`} />
+                            <List.Icon icon="camera" color="#0B5ED7" style={tw`m-0`} />
                         </View>
                     </TouchableOpacity>
 
                     <Text style={tw`text-white text-2xl font-bold mb-1`}>{user.name}</Text>
-                    <Text style={tw`text-[#FFB8A8] text-base`}>{user.email}</Text>
+                    <Text style={tw`text-blue-100 text-base`}>{user.email}</Text>
 
                     {user.isVerified && (
                         <View style={tw`flex-row items-center mt-2 bg-green-500/20 px-3 py-1 rounded-full`}>
@@ -211,7 +211,7 @@ export default function ProfileScreen({ navigation }: any) {
                                             <List.Icon
                                                 {...props}
                                                 icon={item.icon}
-                                                color="#EE4D2D"
+                                                color="#0B5ED7"
                                             />
                                         )}
                                         right={(props) => <List.Icon {...props} icon="chevron-right" />}

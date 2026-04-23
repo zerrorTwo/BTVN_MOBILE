@@ -135,7 +135,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                                     autoCorrect={false}
                                     style={tw`bg-white`}
                                     outlineColor="#e5e7eb"
-                                    activeOutlineColor="#EE4D2D"
+                                    activeOutlineColor="#0B5ED7"
                                     left={<TextInput.Icon icon="email-outline" />}
                                 />
                             </Card.Content>
@@ -147,7 +147,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                             loading={isRequestingOTP}
                             disabled={isRequestingOTP}
                             style={tw`rounded-xl`}
-                            buttonColor="#EE4D2D"
+                            buttonColor="#0B5ED7"
                             contentStyle={tw`py-2`}
                         >
                             {isRequestingOTP ? 'Đang gửi...' : 'Gửi mã OTP'}
@@ -173,7 +173,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                                     maxLength={6}
                                     style={tw`bg-white text-center text-2xl tracking-widest`}
                                     outlineColor="#e5e7eb"
-                                    activeOutlineColor="#EE4D2D"
+                                    activeOutlineColor="#0B5ED7"
                                 />
                             </Card.Content>
                         </Card>
@@ -184,7 +184,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                             loading={isChanging}
                             disabled={isChanging}
                             style={tw`rounded-xl mb-3`}
-                            buttonColor="#EE4D2D"
+                            buttonColor="#0B5ED7"
                             contentStyle={tw`py-2`}
                         >
                             {isChanging ? 'Đang xác nhận...' : 'Xác nhận'}
@@ -196,7 +196,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                                 mode="text"
                                 onPress={handleResendOTP}
                                 disabled={isRequestingOTP}
-                                textColor="#EE4D2D"
+                                textColor="#0B5ED7"
                                 compact
                             >
                                 Gửi lại

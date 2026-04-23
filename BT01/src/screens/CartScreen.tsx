@@ -124,7 +124,7 @@ export const CartScreen = ({ navigation }: any) => {
                     mode="contained"
                     onPress={() => navigation.navigate('Login')}
                     style={tw`mt-6 rounded-xl`}
-                    buttonColor="#EE4D2D"
+                    buttonColor="#0B5ED7"
                 >
                     Đăng nhập ngay
                 </Button>
@@ -135,7 +135,7 @@ export const CartScreen = ({ navigation }: any) => {
     if (isLoading) {
         return (
             <View style={tw`flex-1 justify-center items-center bg-gray-50`}>
-                <ActivityIndicator size="large" color="#EE4D2D" />
+                <ActivityIndicator size="large" color="#0B5ED7" />
             </View>
         );
     }
@@ -157,7 +157,7 @@ export const CartScreen = ({ navigation }: any) => {
                     mode="contained"
                     onPress={() => navigation.navigate("HomeTab")}
                     style={tw`mt-6 rounded-xl`}
-                    buttonColor="#EE4D2D"
+                    buttonColor="#0B5ED7"
                 >
                     Mua sắm ngay
                 </Button>
@@ -173,7 +173,7 @@ export const CartScreen = ({ navigation }: any) => {
                         Giỏ hàng ({cart.itemCount} sp)
                     </Text>
                     <TouchableOpacity onPress={handleClearCart}>
-                        <Text style={tw`text-sm text-[#EE4D2D]`}>Xóa tất cả</Text>
+                        <Text style={tw`text-sm text-[#0B5ED7]`}>Xóa tất cả</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -198,14 +198,14 @@ export const CartScreen = ({ navigation }: any) => {
             <View style={tw`bg-white px-4 py-4 border-t border-gray-200`}>
                 <View style={tw`flex-row justify-between items-center mb-3`}>
                     <Text style={tw`text-base text-gray-600`}>Tạm tính</Text>
-                    <Text style={tw`text-xl font-bold text-[#EE4D2D]`}>
+                    <Text style={tw`text-xl font-bold text-[#0B5ED7]`}>
                         ₫{cart.subtotal.toLocaleString()}
                     </Text>
                 </View>
                 <Button
                     mode="contained"
                     onPress={handleCheckout}
-                    style={tw`bg-[#EE4D2D] py-1`}
+                    style={tw`bg-[#0B5ED7] py-1`}
                     labelStyle={tw`text-base font-semibold`}
                 >
                     Thanh toán ({cart.itemCount} sản phẩm)
@@ -236,7 +236,7 @@ export const CartScreen = ({ navigation }: any) => {
                         <Button
                             mode="contained"
                             onPress={modalConfig.onConfirm}
-                            buttonColor="#EE4D2D"
+                            buttonColor="#0B5ED7"
                             style={tw`rounded-lg`}
                         >
                             {modalConfig.confirmLabel}

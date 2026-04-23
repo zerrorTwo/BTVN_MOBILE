@@ -103,7 +103,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                             }
                             style={tw`bg-white mb-4`}
                             outlineColor="#e5e7eb"
-                            activeOutlineColor="#EE4D2D"
+                            activeOutlineColor="#0B5ED7"
                         />
 
                         {/* New Password */}
@@ -122,7 +122,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                             }
                             style={tw`bg-white mb-4`}
                             outlineColor="#e5e7eb"
-                            activeOutlineColor="#EE4D2D"
+                            activeOutlineColor="#0B5ED7"
                         />
 
                         {/* Confirm Password */}
@@ -141,7 +141,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                             }
                             style={tw`bg-white`}
                             outlineColor="#e5e7eb"
-                            activeOutlineColor="#EE4D2D"
+                            activeOutlineColor="#0B5ED7"
                         />
                     </Card.Content>
                 </Card>
@@ -153,7 +153,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
                     loading={isLoading}
                     disabled={isLoading}
                     style={tw`rounded-xl`}
-                    buttonColor="#EE4D2D"
+                    buttonColor="#0B5ED7"
                     contentStyle={tw`py-2`}
                 >
                     {isLoading ? 'Đang xử lý...' : 'Đổi mật khẩu'}

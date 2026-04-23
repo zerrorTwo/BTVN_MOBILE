@@ -12,6 +12,7 @@ import { Text, Card, Avatar, IconButton } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import tw from 'twrnc';
 import { logout } from '../store/authSlice';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import {
   Layout,
   CategoryCard,
@@ -33,7 +34,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
   const { user } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
 
   // API Queries
   const {
@@ -66,11 +66,6 @@ export default function HomeScreen({ navigation }: Props) {
     setRefreshing(false);
   }, [refetchCategories, refetchBestSellers, refetchDiscounted]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigation.replace('Login');
-  };
-
   const handleProductPress = (productId: number) => {
     navigation.navigate('ProductDetail', { productId });
   };
@@ -93,8 +88,8 @@ export default function HomeScreen({ navigation }: Props) {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#EE4D2D']}
-              tintColor="#EE4D2D"
+              colors={['#0B5ED7']}
+              tintColor="#0B5ED7"
             />
           }
           showsVerticalScrollIndicator={false}
@@ -111,17 +106,38 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Content */}
           <View style={tw`mt-8`}>
+            <View style={tw`px-4 mb-5`}>
+              <Card style={tw`rounded-2xl bg-[#eaf3ff]`} elevation={0}>
+                <Card.Content style={tw`py-3`}>
+                  <Text style={tw`text-[#0059c9] font-bold text-base`}>
+                    Mega Sale công nghệ
+                  </Text>
+                  <Text style={tw`text-[#1f2937] text-xs mt-1`}>
+                    Ưu đãi laptop, gear và phụ kiện chính hãng mỗi ngày
+                  </Text>
+                </Card.Content>
+              </Card>
+            </View>
+
             {/* Categories Section */}
             <View style={tw`mb-6`}>
               <SectionHeader
                 title="Danh mục"
                 subtitle="Khám phá theo danh mục"
                 icon="shape"
-                iconColor="#EE4D2D"
+                iconColor="#0059c9"
               />
               {categoriesLoading ? (
-                <View style={tw`flex-row justify-center py-4`}>
-                  <ActivityIndicator size="small" color="#EE4D2D" />
+                <View style={tw`px-4 py-2`}>
+                  <SkeletonPlaceholder>
+                    <View style={tw`flex-row`}>
+                      {[1, 2, 3, 4].map((item) => (
+                        <View key={item} style={{ width: 90, marginRight: 10 }}>
+                          <View style={{ width: 90, height: 90, borderRadius: 16 }} />
+                        </View>
+                      ))}
+                    </View>
+                  </SkeletonPlaceholder>
                 </View>
               ) : (
                 <FlatList
@@ -151,12 +167,20 @@ export default function HomeScreen({ navigation }: Props) {
                 title="Bán chạy nhất"
                 subtitle="Top 10 sản phẩm hot nhất"
                 icon="fire"
-                iconColor="#f97316"
+                iconColor="#0059c9"
                 onSeeAll={() => navigation.navigate('Search', { sortBy: 'sold' })}
               />
               {bestSellersLoading ? (
-                <View style={tw`flex-row justify-center py-4`}>
-                  <ActivityIndicator size="small" color="#f97316" />
+                <View style={tw`px-4 py-2`}>
+                  <SkeletonPlaceholder>
+                    <View style={tw`flex-row`}>
+                      {[1, 2].map((item) => (
+                        <View key={item} style={{ width: 260, marginRight: 10 }}>
+                          <View style={{ width: 260, height: 110, borderRadius: 14 }} />
+                        </View>
+                      ))}
+                    </View>
+                  </SkeletonPlaceholder>
                 </View>
               ) : (
                 <FlatList
@@ -186,11 +210,16 @@ export default function HomeScreen({ navigation }: Props) {
                 title="Khuyến mãi hot"
                 subtitle="20 sản phẩm giảm giá sâu nhất"
                 icon="tag-multiple"
-                iconColor="#ef4444"
+                iconColor="#0059c9"
               />
               {discountedLoading ? (
-                <View style={tw`py-8 items-center`}>
-                  <ActivityIndicator size="large" color="#ef4444" />
+                <View style={tw`px-4 py-2`}>
+                  <SkeletonPlaceholder>
+                    <View style={tw`flex-row justify-between`}>
+                      <View style={{ width: '48%', height: 220, borderRadius: 16 }} />
+                      <View style={{ width: '48%', height: 220, borderRadius: 16 }} />
+                    </View>
+                  </SkeletonPlaceholder>
                 </View>
               ) : (
                 <View>

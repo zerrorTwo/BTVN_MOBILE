@@ -93,7 +93,7 @@ export const OrdersScreen = ({ navigation }: any) => {
                     mode="contained"
                     onPress={() => navigation.navigate('Login')}
                     style={tw`mt-6 rounded-xl`}
-                    buttonColor="#EE4D2D"
+                    buttonColor="#0B5ED7"
                 >
                     Đăng nhập ngay
                 </Button>
@@ -116,7 +116,7 @@ export const OrdersScreen = ({ navigation }: any) => {
                 mode="contained"
                 onPress={() => navigation.navigate("HomeTab")}
                 style={tw`mt-6 rounded-xl`}
-                buttonColor="#EE4D2D"
+                buttonColor="#0B5ED7"
             >
                 Mua sắm ngay
             </Button>
@@ -138,7 +138,7 @@ export const OrdersScreen = ({ navigation }: any) => {
                             style={[
                                 tw`px-4 py-2 mr-2 rounded-full`,
                                 selectedTab === item.value
-                                    ? tw`bg-[#EE4D2D]`
+                                    ? tw`bg-[#0B5ED7]`
                                     : tw`bg-gray-100`,
                             ]}
                         >
@@ -159,7 +159,7 @@ export const OrdersScreen = ({ navigation }: any) => {
 
             {isLoading ? (
                 <View style={tw`flex-1 justify-center items-center`}>
-                    <ActivityIndicator size="large" color="#EE4D2D" />
+                    <ActivityIndicator size="large" color="#0B5ED7" />
                 </View>
             ) : (
                 <FlatList
@@ -178,7 +178,7 @@ export const OrdersScreen = ({ navigation }: any) => {
                     ListFooterComponent={
                         isFetching && !isLoading ? (
                             <View style={tw`py-4`}>
-                                <ActivityIndicator size="small" color="#EE4D2D" />
+                                <ActivityIndicator size="small" color="#0B5ED7" />
                             </View>
                         ) : null
                     }

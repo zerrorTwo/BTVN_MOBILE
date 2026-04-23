@@ -1,6 +1,7 @@
 import sequelize from "../config/database";
 import User from "./user.model";
 import { Product, Category } from "./product.model";
+import Brand from "./brand.model";
 import Cart from "./cart.model";
 import CartItem from "./cart-item.model";
 import Order from "./order.model";
@@ -30,6 +31,12 @@ Review.belongsTo(User, { foreignKey: "userId", as: "user" });
 Product.hasMany(Review, { foreignKey: "productId", as: "reviews" });
 Review.belongsTo(Product, { foreignKey: "productId", as: "product" });
 
-export { User, Product, Category, Cart, CartItem, Order, OrderItem, Coupon, Review };
+Brand.hasMany(Product, { foreignKey: "brandId", as: "products" });
+Product.belongsTo(Brand, { foreignKey: "brandId", as: "brand" });
+
+Category.hasMany(Category, { foreignKey: "parentId", as: "subCategories" });
+Category.belongsTo(Category, { foreignKey: "parentId", as: "parentCategory" });
+
+export { User, Product, Category, Brand, Cart, CartItem, Order, OrderItem, Coupon, Review };
 
 export default sequelize;

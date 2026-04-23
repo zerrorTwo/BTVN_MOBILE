@@ -64,7 +64,7 @@ export default function CompareScreen({ navigation }: any) {
               </Text>
               <Button
                 mode="contained"
-                buttonColor="#EE4D2D"
+                buttonColor="#0B5ED7"
                 style={tw`mt-4`}
                 onPress={() => navigation.navigate("HomeTab")}
               >

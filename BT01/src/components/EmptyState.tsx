@@ -40,7 +40,7 @@ const EmptyStateComponent: React.FC<EmptyStateProps> = ({
                 <Button
                     mode="contained"
                     onPress={onButtonPress}
-                    style={tw`mt-6 bg-[#EE4D2D]`}
+                    style={tw`mt-6 bg-[#0B5ED7]`}
                     labelStyle={tw`text-white`}
                 >
                     {buttonText}
