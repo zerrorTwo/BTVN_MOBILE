@@ -16,6 +16,14 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
 
     const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
 
+    const handleBackToLogin = () => {
+        if (navigation.canGoBack()) {
+            navigation.goBack();
+            return;
+        }
+        navigation.replace('Login');
+    };
+
     const handleForgetPassword = async () => {
         // Validate email
         const emailErr = validateEmail(email);
@@ -92,7 +100,7 @@ export default function ForgetPasswordScreen({ navigation }: Props) {
 
                         <Button
                             mode="outlined"
-                            onPress={() => navigation.navigate('Login')}
+                            onPress={handleBackToLogin}
                             style={styles.button}
                         >
                             Quay lại đăng nhập

@@ -94,6 +94,14 @@ export const CheckoutScreen = ({ navigation }: any) => {
             const orderId = result.data?.orderId;
             const payUrl = result.data?.payUrl;
 
+            // Backend already clears cart when creating order.
+            // Clear client-side cart cache/state immediately for all payment methods.
+            try {
+                await clearCart().unwrap();
+            } catch {
+                // Non-blocking: cart query can still re-sync on next fetch.
+            }
+
             if (paymentMethod === PaymentMethod.MOMO && payUrl && orderId) {
                 navigation.reset({
                     index: 1,
@@ -103,16 +111,6 @@ export const CheckoutScreen = ({ navigation }: any) => {
                     ],
                 });
                 return;
-            }
-
-            // Keep client cart in sync after successful order placement.
-            // For COD this should clear immediately; for gateway flows it is handled on payment success screen.
-            if (paymentMethod !== PaymentMethod.MOMO) {
-                try {
-                    await clearCart().unwrap();
-                } catch {
-                    // Non-blocking: order already created, cart can still be refreshed later.
-                }
             }
 
             Toast.show({

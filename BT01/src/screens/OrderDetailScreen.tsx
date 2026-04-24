@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useLayoutEffect, useState } from "react";
 import {
     View,
     Text,
@@ -6,6 +6,7 @@ import {
     Image,
     TextInput,
     RefreshControl,
+    TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -61,6 +62,35 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
             refetch();
         }, [refetch]),
     );
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerLeft: () => (
+                <TouchableOpacity
+                    onPress={() => {
+                        if (navigation.canGoBack()) {
+                            navigation.goBack();
+                            return;
+                        }
+                        navigation.navigate("Home");
+                    }}
+                    style={tw`flex-row items-center pr-2 py-1`}
+                    activeOpacity={0.8}
+                >
+                    <Ionicons
+                        name="chevron-back"
+                        size={22}
+                        color={colors.text.primary}
+                    />
+                    <Text
+                        style={[tw`text-base font-medium`, { color: colors.text.primary }]}
+                    >
+                        Home
+                    </Text>
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
 
     const handleRetryMomo = async () => {
         try {

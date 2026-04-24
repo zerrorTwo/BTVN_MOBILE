@@ -71,11 +71,11 @@ export default function RegisterScreen({ navigation }: Props) {
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     <Card style={styles.card}>
                         <Card.Content>
-                            <Title style={styles.title}>Create Account</Title>
-                            <Paragraph style={styles.subtitle}>Sign up to get started</Paragraph>
+                            <Title style={styles.title}>Tạo tài khoản</Title>
+                            <Paragraph style={styles.subtitle}>Đăng ký để bắt đầu</Paragraph>
 
                             <TextInput
-                                label="Name"
+                                label="Họ và tên"
                                 value={name}
                                 onChangeText={(text) => {
                                     setName(text);
@@ -107,7 +107,7 @@ export default function RegisterScreen({ navigation }: Props) {
                             </HelperText>
 
                             <TextInput
-                                label="Password"
+                                label="Mật khẩu"
                                 value={password}
                                 onChangeText={(text) => {
                                     setPassword(text);
@@ -123,7 +123,7 @@ export default function RegisterScreen({ navigation }: Props) {
                             </HelperText>
 
                             <TextInput
-                                label="Confirm Password"
+                                label="Xác nhận mật khẩu"
                                 value={confirmPassword}
                                 onChangeText={(text) => {
                                     setConfirmPassword(text);
@@ -145,7 +145,7 @@ export default function RegisterScreen({ navigation }: Props) {
                                 disabled={isLoading}
                                 style={styles.button}
                             >
-                                Register
+                                Đăng ký
                             </Button>
 
                             <Button
@@ -153,7 +153,7 @@ export default function RegisterScreen({ navigation }: Props) {
                                 onPress={() => navigation.navigate('Login')}
                                 style={styles.button}
                             >
-                                Already have an account? Login
+                                Đã có tài khoản? Đăng nhập
                             </Button>
                         </Card.Content>
                     </Card>
