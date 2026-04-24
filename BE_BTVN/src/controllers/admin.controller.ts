@@ -9,7 +9,6 @@ import { setOrderStatus, OrderError } from "../services/order.service";
 const ORDER_STATUS_GROUPS: OrderStatus[] = [
   OrderStatus.PENDING,
   OrderStatus.CONFIRMED,
-  OrderStatus.PREPARING,
   OrderStatus.SHIPPING,
   OrderStatus.COMPLETED,
   OrderStatus.CANCELLED,

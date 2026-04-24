@@ -4,7 +4,6 @@ import sequelize from "../config/database";
 export enum OrderStatus {
   PENDING = "PENDING",
   CONFIRMED = "CONFIRMED",
-  PREPARING = "PREPARING",
   SHIPPING = "SHIPPING",
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",

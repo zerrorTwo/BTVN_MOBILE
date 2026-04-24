@@ -212,7 +212,7 @@ Template HTML email nằm ở [BE_BTVN/src/utils/order-email.template.ts](BE_BTV
 | MoMo IPN xác nhận thanh toán | Auto khi `paymentStatus=PAID` + `status=PENDING` → `CONFIRMED` | 📧 "Đơn hàng đã được xác nhận" |
 | COD auto-confirm sau 30 phút | Bất kỳ request nào vào `GET /orders/*` | 📧 "Đơn hàng đã được xác nhận" |
 
-Các status khác (`PREPARING`, `COMPLETED`, `CANCELLED`…) hiện **không** gửi email — có thể thêm vào `STATUS_META` ở file template nếu cần.
+Các status khác (`COMPLETED`, `CANCELLED`…) hiện **không** gửi email — có thể thêm vào `STATUS_META` ở file template nếu cần.
 
 ---
 

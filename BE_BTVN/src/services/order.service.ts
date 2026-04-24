@@ -393,7 +393,6 @@ export async function setOrderStatus(
 const CANCELLABLE_STATUSES = [
   OrderStatus.PENDING,
   OrderStatus.CONFIRMED,
-  OrderStatus.PREPARING,
 ] as const;
 
 export function getCanCancel(order: any): "direct" | "request" | "none" {

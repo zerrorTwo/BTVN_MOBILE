@@ -20,7 +20,6 @@ interface TimelineStep {
 const TIMELINE_STEPS: TimelineStep[] = [
     { status: OrderStatus.PENDING, label: "Đơn hàng mới", icon: "document-text" },
     { status: OrderStatus.CONFIRMED, label: "Đã xác nhận", icon: "checkmark-circle" },
-    { status: OrderStatus.PREPARING, label: "Đang chuẩn bị", icon: "cube" },
     { status: OrderStatus.SHIPPING, label: "Đang giao hàng", icon: "bicycle" },
     { status: OrderStatus.COMPLETED, label: "Hoàn thành", icon: "checkmark-done-circle" },
 ];

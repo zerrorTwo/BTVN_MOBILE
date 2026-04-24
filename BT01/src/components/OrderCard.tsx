@@ -16,7 +16,6 @@ interface OrderCardProps {
 const STATUS_COLORS: Record<OrderStatus, string> = {
     PENDING: colors.status.pending,
     CONFIRMED: colors.status.confirmed,
-    PREPARING: colors.status.preparing,
     SHIPPING: colors.status.shipping,
     COMPLETED: colors.status.completed,
     CANCELLED: colors.status.cancelled,
@@ -26,7 +25,6 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 const STATUS_TEXTS: Record<OrderStatus, string> = {
     PENDING: "Chờ xác nhận",
     CONFIRMED: "Đã xác nhận",
-    PREPARING: "Đang chuẩn bị",
     SHIPPING: "Đang giao hàng",
     COMPLETED: "Hoàn thành",
     CANCELLED: "Đã hủy",

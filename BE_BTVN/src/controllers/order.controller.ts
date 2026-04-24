@@ -348,13 +348,12 @@ export const requestCancelOrder = async (
     }
 
     if (
-      order.status !== OrderStatus.PREPARING &&
       order.status !== OrderStatus.SHIPPING
     ) {
       res.status(400).json({
         success: false,
         message:
-          "Can only request cancellation for orders in PREPARING or SHIPPING status",
+          "Can only request cancellation for orders in SHIPPING status",
       });
       return;
     }

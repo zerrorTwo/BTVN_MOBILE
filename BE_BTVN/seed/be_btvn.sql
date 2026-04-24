@@ -215,7 +215,7 @@ CREATE TABLE `orders` (
   `paymentMethod` enum('COD','MOMO','VNPAY','ZALOPAY') NOT NULL,
   `paymentStatus` enum('UNPAID','PAID','FAILED','REFUNDED') NOT NULL DEFAULT 'UNPAID',
   `transId` varchar(100) DEFAULT NULL,
-  `status` enum('PENDING','CONFIRMED','PREPARING','SHIPPING','COMPLETED','CANCELLED','CANCEL_REQUESTED') NOT NULL DEFAULT 'PENDING',
+  `status` enum('PENDING','CONFIRMED','SHIPPING','COMPLETED','CANCELLED','CANCEL_REQUESTED') NOT NULL DEFAULT 'PENDING',
   `shippingAddress` text NOT NULL,
   `receiverName` varchar(100) NOT NULL,
   `receiverPhone` varchar(20) NOT NULL,

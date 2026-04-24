@@ -86,7 +86,6 @@ export const colors = {
   status: {
     pending: "#F69113",
     confirmed: "#1E90FF",
-    preparing: "#9C27B0",
     shipping: "#2196F3",
     completed: "#26AA99",
     cancelled: "#9E9E9E",

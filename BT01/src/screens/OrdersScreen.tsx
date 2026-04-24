@@ -22,7 +22,6 @@ type OrderStatus =
     | "ALL"
     | "PENDING"
     | "CONFIRMED"
-    | "PREPARING"
     | "SHIPPING"
     | "COMPLETED"
     | "CANCELLED"
@@ -32,7 +31,6 @@ const TABS: { label: string; value: OrderStatus }[] = [
     { label: "Tất cả", value: "ALL" },
     { label: "Chờ xác nhận", value: "PENDING" },
     { label: "Đã xác nhận", value: "CONFIRMED" },
-    { label: "Đang chuẩn bị", value: "PREPARING" },
     { label: "Đang giao", value: "SHIPPING" },
     { label: "Hoàn thành", value: "COMPLETED" },
     { label: "Yêu cầu hủy", value: "CANCEL_REQUESTED" },
