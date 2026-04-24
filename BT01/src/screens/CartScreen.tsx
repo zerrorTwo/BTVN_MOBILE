@@ -36,6 +36,7 @@ export const CartScreen = ({ navigation }: any) => {
     const [removeCartItem] = useRemoveCartItemMutation();
     const [clearCart] = useClearCartMutation();
     const [refreshing, setRefreshing] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalConfig, setModalConfig] = useState<{
@@ -79,6 +80,7 @@ export const CartScreen = ({ navigation }: any) => {
                 message: "Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?",
                 confirmLabel: "Xóa",
                 onConfirm: async () => {
+                    setIsSubmitting(true);
                     try {
                         await removeCartItem(itemId).unwrap();
                         Toast.show({
@@ -92,6 +94,7 @@ export const CartScreen = ({ navigation }: any) => {
                             text2: error.data?.message,
                         });
                     }
+                    setIsSubmitting(false);
                     setModalVisible(false);
                 },
             });
@@ -106,6 +109,7 @@ export const CartScreen = ({ navigation }: any) => {
             message: "Bạn có chắc muốn xóa toàn bộ giỏ hàng? Hành động này không thể hoàn tác.",
             confirmLabel: "Xóa tất cả",
             onConfirm: async () => {
+                setIsSubmitting(true);
                 try {
                     await clearCart().unwrap();
                     Toast.show({
@@ -119,6 +123,7 @@ export const CartScreen = ({ navigation }: any) => {
                         text2: error.data?.message,
                     });
                 }
+                setIsSubmitting(false);
                 setModalVisible(false);
             },
         });
@@ -314,7 +319,9 @@ export const CartScreen = ({ navigation }: any) => {
             <Portal>
                 <Modal
                     visible={modalVisible}
-                    onDismiss={() => setModalVisible(false)}
+                    onDismiss={() => {
+                        if (!isSubmitting) setModalVisible(false);
+                    }}
                     contentContainerStyle={[
                         tw`mx-8 p-6 rounded-3xl`,
                         { backgroundColor: colors.background.paper },
@@ -345,22 +352,40 @@ export const CartScreen = ({ navigation }: any) => {
                         {modalConfig.message}
                     </Text>
                     <View style={tw`flex-row`}>
-                        <Button
-                            mode="outlined"
+                        <TouchableOpacity
                             onPress={() => setModalVisible(false)}
-                            style={tw`flex-1 mr-2 rounded-xl`}
-                            textColor={colors.text.secondary}
+                            disabled={isSubmitting}
+                            activeOpacity={0.8}
+                            style={[
+                                tw`flex-1 mr-2 rounded-xl py-3 items-center`,
+                                {
+                                    borderWidth: 1,
+                                    borderColor: colors.border.main,
+                                    backgroundColor: colors.background.paper,
+                                    opacity: isSubmitting ? 0.6 : 1,
+                                },
+                            ]}
                         >
-                            Hủy
-                        </Button>
-                        <Button
-                            mode="contained"
+                            <Text style={[tw`font-semibold`, { color: colors.text.secondary }]}>
+                                Hủy
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
                             onPress={modalConfig.onConfirm}
-                            style={[tw`flex-1 rounded-xl`, { backgroundColor: colors.error.main }]}
-                            labelStyle={tw`text-white`}
+                            disabled={isSubmitting}
+                            activeOpacity={0.8}
+                            style={[
+                                tw`flex-1 rounded-xl py-3 items-center`,
+                                {
+                                    backgroundColor: colors.error.main,
+                                    opacity: isSubmitting ? 0.6 : 1,
+                                },
+                            ]}
                         >
-                            {modalConfig.confirmLabel}
-                        </Button>
+                            <Text style={[tw`font-semibold`, { color: colors.text.white }]}>
+                                {isSubmitting ? "Đang xử lý..." : modalConfig.confirmLabel}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 </Modal>
             </Portal>

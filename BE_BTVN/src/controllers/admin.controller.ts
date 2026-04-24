@@ -470,7 +470,7 @@ export const getAdminBrands = async (req: Request, res: Response): Promise<void>
 
     const { count, rows } = await Category.findAndCountAll({
       where,
-      order: [["name", "ASC"]],
+      order: [["createdAt", "DESC"]],
       limit,
       offset,
     });

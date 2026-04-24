@@ -15,7 +15,7 @@ import Toast from "react-native-toast-message";
 import tw from "twrnc";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
-import { useGetCartQuery } from "../services/api/cartApi";
+import { useGetCartQuery, useClearCartMutation } from "../services/api/cartApi";
 import { useCheckoutMutation } from "../services/api/orderApi";
 import { PaymentMethod } from "../types/order.types";
 import { colors, PAYMENT_METHOD_META } from "../theme";
@@ -30,6 +30,7 @@ const ORDERED_METHODS: PaymentMethod[] = [
 export const CheckoutScreen = ({ navigation }: any) => {
     const user = useSelector((state: RootState) => state.auth.user);
     const { data: cartData } = useGetCartQuery();
+    const [clearCart] = useClearCartMutation();
     const [checkout, { isLoading }] = useCheckoutMutation();
 
     const [shippingAddress, setShippingAddress] = useState("");
@@ -92,6 +93,16 @@ export const CheckoutScreen = ({ navigation }: any) => {
                     ],
                 });
                 return;
+            }
+
+            // Keep client cart in sync after successful order placement.
+            // For COD this should clear immediately; for gateway flows it is handled on payment success screen.
+            if (paymentMethod !== PaymentMethod.MOMO) {
+                try {
+                    await clearCart().unwrap();
+                } catch {
+                    // Non-blocking: order already created, cart can still be refreshed later.
+                }
             }
 
             Toast.show({

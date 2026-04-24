@@ -81,6 +81,7 @@ export default function MainTabs() {
                 },
                 tabBarActiveTintColor: '#0B5ED7',
                 tabBarInactiveTintColor: colors.text.secondary,
+                tabBarShowIcon: true,
                 tabBarPressColor: 'rgba(11, 94, 215, 0.12)',
                 tabBarPressOpacity: 0.75,
                 // Custom TouchableOpacity breaks press events on web — native only

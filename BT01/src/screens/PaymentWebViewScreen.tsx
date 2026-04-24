@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, BackHandler } from "react-native";
+import { View, Text, BackHandler, Linking, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { IconButton, Button, Portal, Modal } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
@@ -9,6 +9,7 @@ import { MotiView } from "moti";
 import Toast from "react-native-toast-message";
 import tw from "twrnc";
 import { WebView, WebViewNavigation } from "react-native-webview";
+import { useClearCartMutation } from "../services/api/cartApi";
 import { useGetOrderByIdQuery } from "../services/api/orderApi";
 import { PaymentStatus } from "../types/order.types";
 import { colors, gradients } from "../theme";
@@ -25,6 +26,7 @@ type Props = {
  */
 export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
     const { orderId, payUrl } = route.params;
+    const [clearCart] = useClearCartMutation();
     const [webLoading, setWebLoading] = useState(true);
     const [pollEnabled, setPollEnabled] = useState(true);
     const [leaveModalVisible, setLeaveModalVisible] = useState(false);
@@ -47,21 +49,28 @@ export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
 
         if (paymentStatus === PaymentStatus.PAID) {
             setPollEnabled(false);
-            Toast.show({
-                type: "success",
-                text1: "Thanh toán thành công",
-                text2: "Đơn hàng của bạn đã được xác nhận",
-                visibilityTime: 2500,
-            });
-            setTimeout(() => {
-                navigation.reset({
-                    index: 1,
-                    routes: [
-                        { name: "Home" },
-                        { name: "OrderDetail", params: { orderId } },
-                    ],
+            (async () => {
+                try {
+                    await clearCart().unwrap();
+                } catch {
+                    // Non-blocking: payment is already successful, cart can be re-synced on next fetch.
+                }
+                Toast.show({
+                    type: "success",
+                    text1: "Thanh toán thành công",
+                    text2: "Đơn hàng của bạn đã được xác nhận",
+                    visibilityTime: 2500,
                 });
-            }, 1500);
+                setTimeout(() => {
+                    navigation.reset({
+                        index: 1,
+                        routes: [
+                            { name: "Home" },
+                            { name: "OrderDetail", params: { orderId } },
+                        ],
+                    });
+                }, 1500);
+            })();
         } else if (paymentStatus === PaymentStatus.FAILED) {
             setPollEnabled(false);
             Toast.show({
@@ -80,7 +89,7 @@ export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
                 });
             }, 1500);
         }
-    }, [paymentStatus, navigation, orderId]);
+    }, [paymentStatus, clearCart, navigation, orderId]);
 
     const handleNavChange = (nav: WebViewNavigation) => {
         if (
@@ -106,36 +115,33 @@ export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
         >
             <StatusBar style="light" />
 
-            {/* Gradient header (MoMo brand) */}
+            {/* Premium Header */}
             <LinearGradient
                 colors={gradients.momo as any}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={tw`px-2 pt-2 pb-3`}
+                end={{ x: 1, y: 0 }}
+                style={tw`px-2 pt-1 pb-4`}
             >
                 <View style={tw`flex-row items-center justify-between`}>
                     <IconButton
                         icon="close"
-                        size={22}
+                        size={24}
                         onPress={() => setLeaveModalVisible(true)}
                         iconColor="#fff"
                     />
-                    <View style={tw`flex-row items-center`}>
-                        <Ionicons name="wallet" size={18} color="#fff" />
-                        <Text style={tw`text-lg font-semibold text-white ml-2`}>
-                            Thanh toán MoMo
-                        </Text>
-                    </View>
+                    <Text style={[tw`text-lg font-bold text-white`, { letterSpacing: 0.5 }]}>
+                        Thanh toán MoMo
+                    </Text>
                     <View style={tw`w-[40px]`} />
                 </View>
             </LinearGradient>
 
-            {/* Status indicator (pulsing dot) */}
+            {/* Status indicator (Matching screenshot) */}
             {paymentStatus === PaymentStatus.UNPAID && (
                 <View
                     style={[
-                        tw`px-4 py-2 flex-row items-center`,
-                        { backgroundColor: "#FFF4E5" },
+                        tw`px-5 py-2.5 flex-row items-center`,
+                        { backgroundColor: "#FFFBEB" }, // Lighter yellow matching screenshot
                     ]}
                 >
                     <MotiView
@@ -143,17 +149,20 @@ export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{
                             type: "timing",
-                            duration: 700,
+                            duration: 800,
                             loop: true,
                             repeatReverse: true,
                         }}
                         style={[
-                            tw`w-2 h-2 rounded-full`,
-                            { backgroundColor: colors.warning.main },
+                            tw`w-2 h-2 rounded-full mr-3`,
+                            { backgroundColor: "#F69113" },
                         ]}
                     />
                     <Text
-                        style={[tw`text-xs ml-2 flex-1`, { color: colors.warning.dark }]}
+                        style={[
+                            tw`text-xs font-medium flex-1`,
+                            { color: "#B45309", lineHeight: 16 },
+                        ]}
                     >
                         Đang chờ xác nhận từ MoMo... Vui lòng không tắt cửa sổ.
                     </Text>
@@ -188,31 +197,38 @@ export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
                         ]}
                     >
                         <MotiView
-                            from={{ scale: 0.8, opacity: 0.8 }}
-                            animate={{ scale: 1.05, opacity: 1 }}
-                            transition={{
-                                type: "timing",
-                                duration: 600,
-                                loop: true,
-                                repeatReverse: true,
-                            }}
-                            style={[
-                                tw`w-16 h-16 rounded-3xl items-center justify-center`,
-                                { backgroundColor: colors.provider.momo },
-                            ]}
+                            from={{ scale: 0.9, opacity: 0, translateY: 10 }}
+                            animate={{ scale: 1, opacity: 1, translateY: 0 }}
+                            transition={{ type: "timing", duration: 400 }}
+                            style={tw`items-center`}
                         >
-                            <Ionicons name="wallet" size={30} color="#fff" />
+                            <MotiView
+                                from={{ scale: 0.8, opacity: 0.8 }}
+                                animate={{ scale: 1.05, opacity: 1 }}
+                                transition={{
+                                    type: "timing",
+                                    duration: 800,
+                                    loop: true,
+                                    repeatReverse: true,
+                                }}
+                                style={[
+                                    tw`w-20 h-20 rounded-[24px] items-center justify-center mb-6`,
+                                    { backgroundColor: colors.provider.momo },
+                                ]}
+                            >
+                                <Ionicons name="wallet" size={36} color="#fff" />
+                            </MotiView>
+                            <Text
+                                style={[tw`text-lg font-bold mb-2`, { color: colors.text.primary }]}
+                            >
+                                Kết nối an toàn
+                            </Text>
+                            <Text
+                                style={[tw`text-sm text-center px-10`, { color: colors.text.secondary, lineHeight: 20 }]}
+                            >
+                                Đang mở cổng thanh toán MoMo. Vui lòng chờ trong giây lát...
+                            </Text>
                         </MotiView>
-                        <Text
-                            style={[tw`mt-4 font-semibold`, { color: colors.text.primary }]}
-                        >
-                            Đang mở cổng MoMo...
-                        </Text>
-                        <Text
-                            style={[tw`mt-1 text-xs`, { color: colors.text.secondary }]}
-                        >
-                            Vui lòng chờ trong giây lát
-                        </Text>
                     </View>
                 )}
 
@@ -221,6 +237,35 @@ export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
                     source={{ uri: payUrl }}
                     onLoadEnd={() => setWebLoading(false)}
                     onNavigationStateChange={handleNavChange}
+                    onShouldStartLoadWithRequest={(request) => {
+                        // Handle deep links (itms-appss, momo, etc.)
+                        const { url } = request;
+                        if (
+                            url.startsWith("itms-appss://") ||
+                            url.startsWith("itms-apps://") ||
+                            url.startsWith("momo://") ||
+                            url.includes("apps.apple.com") ||
+                            url.includes("play.google.com")
+                        ) {
+                            Linking.canOpenURL(url)
+                                .then((supported) => {
+                                    if (supported) {
+                                        return Linking.openURL(url);
+                                    }
+                                    // If it's the app store link and can't open itms-appss, try https
+                                    if (url.startsWith("itms-appss://")) {
+                                        const httpsUrl = url.replace("itms-appss://", "https://");
+                                        return Linking.openURL(httpsUrl);
+                                    }
+                                    return Promise.resolve();
+                                })
+                                .catch(() => {
+                                    // Ignore deeplink open errors and keep user in current flow.
+                                });
+                            return false;
+                        }
+                        return true;
+                    }}
                     startInLoadingState
                     javaScriptEnabled
                     domStorageEnabled
@@ -263,27 +308,38 @@ export const PaymentWebViewScreen = ({ route, navigation }: Props) => {
                         Nếu bạn đã thanh toán xong, hãy chờ vài giây để hệ thống cập nhật.
                     </Text>
                     <View style={tw`flex-row`}>
-                        <Button
-                            mode="outlined"
+                        <TouchableOpacity
                             onPress={() => setLeaveModalVisible(false)}
-                            style={tw`flex-1 mr-2 rounded-xl`}
+                            activeOpacity={0.8}
+                            style={[
+                                tw`flex-1 mr-2 rounded-xl py-3 items-center`,
+                                {
+                                    borderWidth: 1,
+                                    borderColor: colors.border.main,
+                                    backgroundColor: colors.background.paper,
+                                },
+                            ]}
                         >
-                            Ở lại
-                        </Button>
-                        <Button
-                            mode="contained"
+                            <Text style={[tw`font-semibold`, { color: colors.text.secondary }]}>
+                                Ở lại
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
                             onPress={() => {
                                 setPollEnabled(false);
                                 setLeaveModalVisible(false);
                                 navigation.goBack();
                             }}
+                            activeOpacity={0.8}
                             style={[
-                                tw`flex-1 rounded-xl`,
+                                tw`flex-1 rounded-xl py-3 items-center`,
                                 { backgroundColor: colors.error.main },
                             ]}
                         >
-                            Rời khỏi
-                        </Button>
+                            <Text style={[tw`font-semibold`, { color: colors.text.white }]}>
+                                Rời khỏi
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 </Modal>
             </Portal>
