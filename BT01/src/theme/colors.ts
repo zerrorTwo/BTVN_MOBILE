@@ -5,6 +5,7 @@ export const colors = {
     main: "#0B5ED7",
     light: "#3B82F6",
     dark: "#0A4AA3",
+    softBg: "#EAF3FF",
     gradient: ["#3B82F6", "#0B5ED7"],
     vibrant: ["#60A5FA", "#2563EB", "#0B5ED7"],
   },
@@ -14,6 +15,7 @@ export const colors = {
     main: "#26AA99",
     light: "#4DB6AC",
     dark: "#00897B",
+    softBg: "#E8F7F3",
     gradient: ["#4DB6AC", "#26AA99"],
   },
 
@@ -22,6 +24,7 @@ export const colors = {
     main: "#F69113",
     light: "#FFB74D",
     dark: "#F57C00",
+    softBg: "#FFF4E5",
     gradient: ["#FFB74D", "#FF9800"],
   },
 
@@ -30,6 +33,7 @@ export const colors = {
     main: "#F44336",
     light: "#EF5350",
     dark: "#C62828",
+    softBg: "#FDE8E7",
     gradient: ["#EF5350", "#F44336"],
   },
 
@@ -38,6 +42,7 @@ export const colors = {
     main: "#2196F3",
     light: "#64B5F6",
     dark: "#1976D2",
+    softBg: "#E0EEF9",
     gradient: ["#64B5F6", "#2196F3"],
   },
 

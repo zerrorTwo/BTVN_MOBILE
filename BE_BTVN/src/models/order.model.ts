@@ -28,6 +28,7 @@ export interface OrderAttributes {
   id?: number;
   userId: number;
   orderCode: string;
+  couponCode?: string | null;
   total: number;
   discount: number;
   paymentMethod: PaymentMethod;
@@ -50,6 +51,7 @@ export class Order
   public id!: number;
   public userId!: number;
   public orderCode!: string;
+  public couponCode!: string | null;
   public total!: number;
   public discount!: number;
   public paymentMethod!: PaymentMethod;
@@ -85,6 +87,11 @@ Order.init(
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
+    },
+    couponCode: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      defaultValue: null,
     },
     total: {
       type: DataTypes.DECIMAL(12, 0),

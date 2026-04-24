@@ -7,6 +7,7 @@ import {
     TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Portal, Modal } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { MotiView } from "moti";
@@ -28,6 +29,7 @@ import {
 import { colors, PAYMENT_METHOD_META, PAYMENT_STATUS_META } from "../theme";
 
 export const OrderDetailScreen = ({ route, navigation }: any) => {
+    const insets = useSafeAreaInsets();
     const { orderId } = route.params;
     const { data, isLoading, refetch } = useGetOrderByIdQuery(orderId);
     const [cancelOrder, { isLoading: isCanceling }] = useCancelOrderMutation();
@@ -343,7 +345,7 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                         <Text
                             style={[tw`text-xl font-bold`, { color: colors.primary.main }]}
                         >
-                            ₫{order.total.toLocaleString()}
+                            ₫{(order.total - order.discount).toLocaleString()}
                         </Text>
                     </View>
                 </View>
@@ -392,10 +394,11 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                     animate={{ translateY: 0, opacity: 1 }}
                     transition={{ type: "timing", duration: 300 }}
                     style={[
-                        tw`px-4 py-3 border-t`,
+                        tw`px-4 pt-3 border-t`,
                         {
                             backgroundColor: colors.background.paper,
                             borderColor: colors.border.light,
+                            paddingBottom: Math.max(insets.bottom, 10),
                         },
                     ]}
                 >
@@ -410,7 +413,7 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                                 tw`mb-2 rounded-xl`,
                                 { backgroundColor: colors.provider.momo },
                             ]}
-                            contentStyle={tw`py-1`}
+                            contentStyle={tw`py-2`}
                             labelStyle={tw`text-white font-semibold`}
                         >
                             Thanh toán với MoMo
@@ -422,7 +425,8 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                             onPress={() => navigation.navigate("OrderTracking", { orderId })}
                             icon="map-marker-path"
                             style={tw`flex-1 mr-2 rounded-xl`}
-                            contentStyle={tw`py-1`}
+                            contentStyle={tw`py-2`}
+                            labelStyle={tw`font-semibold`}
                         >
                             Theo dõi
                         </Button>
@@ -434,7 +438,8 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
                                     tw`flex-1 rounded-xl`,
                                     { borderColor: colors.error.main },
                                 ]}
-                                contentStyle={tw`py-1`}
+                                contentStyle={tw`py-2`}
+                                labelStyle={tw`font-semibold`}
                                 textColor={colors.error.main}
                             >
                                 {cancelButtonLabel}

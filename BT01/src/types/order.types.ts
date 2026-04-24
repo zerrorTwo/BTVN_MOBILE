@@ -58,6 +58,21 @@ export interface CheckoutRequest {
   receiverName: string;
   receiverPhone: string;
   note?: string;
+  couponCode?: string;
+}
+
+export interface ValidateCouponRequest {
+  code: string;
+  total: number;
+}
+
+export interface ValidateCouponResponse {
+  success: boolean;
+  data: {
+    isValid: boolean;
+    message: string;
+    discountAmount: number;
+  };
 }
 
 export interface CheckoutResponse {
@@ -112,4 +127,20 @@ export interface CancelOrderResponse {
   data?: {
     status: OrderStatus;
   };
+}
+
+export interface Coupon {
+  id: number;
+  code: string;
+  type: string;
+  value: number;
+  minOrderValue: number;
+  maxDiscountValue: number | null;
+  endDate: string;
+  isAvailable: boolean;
+}
+
+export interface CouponListResponse {
+  success: boolean;
+  data: Coupon[];
 }

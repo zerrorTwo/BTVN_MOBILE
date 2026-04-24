@@ -7,6 +7,8 @@ import {
   cancelOrder,
   requestCancelOrder,
   updateOrderStatus,
+  validateCouponCode,
+  getAvailableCoupons,
 } from "../controllers/order.controller";
 import { authenticate, requireAdmin } from "../middleware/auth.middleware";
 import { PaymentMethod, OrderStatus } from "../models/order.model";
@@ -38,10 +40,20 @@ const checkoutValidators = [
     .optional()
     .isLength({ max: 500 })
     .withMessage("Note must not exceed 500 characters"),
+  body("couponCode")
+    .optional()
+    .isString()
+    .withMessage("Coupon code must be a string")
+    .isLength({ max: 50 })
+    .withMessage("Coupon code must not exceed 50 characters"),
 ];
 
 router.post("/checkout", authenticate, checkoutValidators, checkout);
 router.post("/", authenticate, checkoutValidators, checkout);
+
+router.post("/validate-coupon", authenticate, validateCouponCode);
+
+router.get("/coupons", authenticate, getAvailableCoupons);
 
 router.get("/", authenticate, getOrders);
 

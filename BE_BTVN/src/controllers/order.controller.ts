@@ -10,6 +10,9 @@ import {
   setOrderStatus,
   OrderError,
 } from "../services/order.service";
+import { validateCoupon } from "../services/coupon.service";
+import { Coupon } from "../models";
+import { Op } from "sequelize";
 
 /**
  * POST /api/v1/orders  (and /checkout)
@@ -35,6 +38,7 @@ export const checkout = async (req: Request, res: Response): Promise<void> => {
       receiverName: req.body.receiverName,
       receiverPhone: req.body.receiverPhone,
       note: req.body.note,
+      couponCode: req.body.couponCode,
     });
 
     res.status(201).json({
@@ -419,6 +423,76 @@ export const updateOrderStatus = async (
     res.status(500).json({
       success: false,
       message: "Failed to update order status",
+      errors: [error instanceof Error ? error.message : String(error)],
+    });
+  }
+};
+
+export const validateCouponCode = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { code, total } = req.body;
+    if (!code) {
+      res.status(400).json({
+        success: false,
+        message: "Coupon code is required",
+      });
+      return;
+    }
+
+    const result = await validateCoupon(code, total || 0);
+    res.json({
+      success: true,
+      data: {
+        isValid: result.isValid,
+        message: result.message,
+        discountAmount: result.discountAmount,
+      },
+    });
+  } catch (error) {
+    console.error("Validate coupon error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to validate coupon",
+      errors: [error instanceof Error ? error.message : String(error)],
+    });
+  }
+};
+
+export const getAvailableCoupons = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const coupons = await Coupon.findAll({
+      where: {
+        isActive: true,
+        startDate: { [Op.lte]: new Date() },
+        endDate: { [Op.gte]: new Date() },
+      },
+      order: [["minOrderValue", "ASC"]],
+    });
+
+    res.json({
+      success: true,
+      data: coupons.map((c) => ({
+        id: c.id,
+        code: c.code,
+        type: c.type,
+        value: parseFloat(c.value.toString()),
+        minOrderValue: parseFloat(c.minOrderValue.toString()),
+        maxDiscountValue: c.maxDiscountValue ? parseFloat(c.maxDiscountValue.toString()) : null,
+        endDate: c.endDate,
+        isAvailable: c.usedCount < c.usageLimit,
+      })),
+    });
+  } catch (error) {
+    console.error("Get available coupons error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load coupons",
       errors: [error instanceof Error ? error.message : String(error)],
     });
   }

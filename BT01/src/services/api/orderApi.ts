@@ -5,9 +5,12 @@ import type {
   CheckoutResponse,
   OrderListResponse,
   OrderDetailResponse,
-  CancelOrderRequest,
   CancelOrderResponse,
+  CancelOrderRequest,
   InitMomoResponse,
+  ValidateCouponRequest,
+  ValidateCouponResponse,
+  CouponListResponse,
 } from "../../types/order.types";
 import { API_BASE_URL } from "../../config";
 
@@ -86,6 +89,16 @@ export const orderApi = createApi({
         method: "POST",
       }),
     }),
+    validateCoupon: builder.mutation<ValidateCouponResponse, ValidateCouponRequest>({
+      query: (body) => ({
+        url: "/api/v1/orders/validate-coupon",
+        method: "POST",
+        body,
+      }),
+    }),
+    getCoupons: builder.query<CouponListResponse, void>({
+      query: () => "/api/v1/orders/coupons",
+    }),
   }),
 });
 
@@ -96,4 +109,6 @@ export const {
   useCancelOrderMutation,
   useRequestCancelOrderMutation,
   useInitMomoPaymentMutation,
+  useValidateCouponMutation,
+  useGetCouponsQuery,
 } = orderApi;

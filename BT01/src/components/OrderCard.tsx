@@ -185,7 +185,7 @@ const OrderCardComponent: React.FC<OrderCardProps> = ({ order, onPress, index = 
                         <Text
                             style={[tw`text-base font-bold`, { color: colors.primary.main }]}
                         >
-                            ₫{order.total.toLocaleString()}
+                            ₫{(order.total - order.discount).toLocaleString()}
                         </Text>
                     </View>
                     <View style={tw`flex-row items-center`}>

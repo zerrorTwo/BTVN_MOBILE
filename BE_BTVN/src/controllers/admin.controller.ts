@@ -67,27 +67,36 @@ const getPeriodRange = (
   return { start, end };
 };
 
-const mapOrderSummary = (order: Order & { user?: User; items?: OrderItem[] }) => ({
-  id: order.id,
-  orderCode: order.orderCode,
-  status: order.status,
-  total: toNumber(order.total),
-  paymentMethod: order.paymentMethod,
-  receiverName: order.receiverName,
-  receiverPhone: order.receiverPhone,
-  shippingAddress: order.shippingAddress,
-  cancellationReason: order.cancellationReason,
-  createdAt: order.createdAt,
-  updatedAt: order.updatedAt,
-  customer: order.user
-    ? {
-        id: order.user.id,
-        name: order.user.name,
-        email: order.user.email,
-      }
-    : null,
-  itemsCount: order.items?.length ?? 0,
-});
+const mapOrderSummary = (order: Order & { user?: User; items?: OrderItem[] }) => {
+  const subtotal = toNumber(order.total);
+  const discount = toNumber(order.discount);
+  const finalTotal = Math.max(0, subtotal - discount);
+  return {
+    id: order.id,
+    orderCode: order.orderCode,
+    couponCode: order.couponCode ?? null,
+    status: order.status,
+    total: finalTotal,
+    subtotal,
+    discount,
+    finalTotal,
+    paymentMethod: order.paymentMethod,
+    receiverName: order.receiverName,
+    receiverPhone: order.receiverPhone,
+    shippingAddress: order.shippingAddress,
+    cancellationReason: order.cancellationReason,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+    customer: order.user
+      ? {
+          id: order.user.id,
+          name: order.user.name,
+          email: order.user.email,
+        }
+      : null,
+    itemsCount: order.items?.length ?? 0,
+  };
+};
 
 export const getAdminDashboard = async (
   _req: Request,
@@ -733,6 +742,23 @@ export const deleteAdminCoupon = async (
       res.status(404).json({
         success: false,
         message: "Coupon not found",
+      });
+      return;
+    }
+
+    const usedOrdersCount = await Order.count({
+      where: { couponCode: coupon.code },
+    });
+    const hasBeenUsed = coupon.usedCount > 0 || usedOrdersCount > 0;
+
+    if (hasBeenUsed) {
+      if (coupon.isActive) {
+        await coupon.update({ isActive: false });
+      }
+      res.status(400).json({
+        success: false,
+        message:
+          "Coupon da duoc su dung nen khong the xoa. He thong da chuyen sang trang thai ngung hoat dong.",
       });
       return;
     }

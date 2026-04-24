@@ -8,7 +8,9 @@ import {
   Product,
   Payment,
   User,
+  Coupon,
 } from "../models";
+import { validateCoupon } from "./coupon.service";
 import {
   OrderStatus,
   PaymentMethod,
@@ -29,6 +31,7 @@ export interface CreateOrderInput {
   receiverName: string;
   receiverPhone: string;
   note?: string;
+  couponCode?: string;
 }
 
 export interface CreateOrderResult {
@@ -93,14 +96,28 @@ export async function createOrderFromCart(
       0,
     );
 
+    const normalizedCouponCode = input.couponCode?.trim().toUpperCase();
+    let discount = 0;
+    let coupon: Coupon | undefined;
+
+    if (normalizedCouponCode) {
+      const validation = await validateCoupon(normalizedCouponCode, total);
+      if (!validation.isValid) {
+        throw new OrderError(validation.message || "Mã khuyến mãi không hợp lệ", 400);
+      }
+      discount = validation.discountAmount;
+      coupon = validation.coupon;
+    }
+
     const orderCode = `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
     const order = await Order.create(
       {
         userId: input.userId,
         orderCode,
+        couponCode: discount > 0 ? (normalizedCouponCode ?? coupon?.code ?? null) : null,
         total,
-        discount: 0,
+        discount,
         paymentMethod: input.paymentMethod,
         paymentStatus:
           input.paymentMethod === PaymentMethod.COD
@@ -114,6 +131,10 @@ export async function createOrderFromCart(
       },
       { transaction },
     );
+
+    if (coupon) {
+      await coupon.increment("usedCount", { by: 1, transaction });
+    }
 
     for (const item of items) {
       await OrderItem.create(
@@ -193,7 +214,9 @@ export async function initiateMomoForOrder(orderId: number): Promise<{
     await order.save();
   }
 
-  const amount = Math.round(parseFloat(order.total.toString()));
+  const amount = Math.round(
+    parseFloat(order.total.toString()) - parseFloat(order.discount.toString()),
+  );
   // MoMo orderId must be unique per call — combine orderCode with a timestamp.
   const momoOrderId = `${order.orderCode}-${Date.now()}`;
 

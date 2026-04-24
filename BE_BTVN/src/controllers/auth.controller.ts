@@ -33,9 +33,43 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: "User with this email already exists",
+      if (existingUser.isVerified) {
+        res.status(400).json({
+          success: false,
+          message: "User with this email already exists and is verified",
+        });
+        return;
+      }
+
+      // If not verified, allow "re-registration" (update name/password and send new OTP)
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Prevent rapid OTP generation: reuse OTP if generated < 5 mins ago
+      const canReuseOTP = existingUser.otp && 
+                         existingUser.updatedAt && 
+                         (Date.now() - new Date(existingUser.updatedAt).getTime() < 300000);
+      
+      const otp = canReuseOTP ? existingUser.otp! : generateOTP();
+      const otpExpiry = getOTPExpiry();
+
+      console.log(`[DEBUG] Register (Re-reg): email=${email}, newOtp=${otp}, reused=${canReuseOTP}`);
+
+      await existingUser.update({
+        name,
+        password: hashedPassword,
+        otp,
+        otpExpiry,
+        otpPurpose: "REGISTER",
+      });
+
+      await emailService.sendRegistrationOTP(email, otp, name);
+
+      res.status(200).json({
+        success: true,
+        message: canReuseOTP 
+          ? "Account exists. Please use the OTP sent to your email." 
+          : "Account exists but not verified. A new OTP has been sent.",
+        email: email,
       });
       return;
     }
@@ -105,7 +139,33 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    if (user.otp !== otp || user.otpPurpose !== purpose) {
+    // Handle idempotency: If already verified for REGISTER, return success.
+    // This prevents errors if the client sends double requests.
+    if (user.isVerified && purpose === "REGISTER") {
+      const token = generateToken(user.id);
+      res.status(200).json({
+        success: true,
+        message: "Account already verified",
+        token,
+        data: { token },
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          isVerified: user.isVerified,
+          role: user.role,
+        },
+      });
+      return;
+    }
+
+    const isOtpMatch = String(user.otp).trim() === String(otp).trim();
+    const isPurposeMatch = String(user.otpPurpose).trim() === String(purpose).trim();
+
+    console.log(`[DEBUG] Verify OTP: email=${email}, inputOtp=${otp}, dbOtp=${user.otp}, purpose=${purpose}, dbPurpose=${user.otpPurpose}`);
+    console.log(`[DEBUG] Match Result: OTP=${isOtpMatch}, Purpose=${isPurposeMatch}`);
+
+    if (!isOtpMatch || !isPurposeMatch) {
       res.status(400).json({
         success: false,
         message: "Invalid OTP code",
@@ -133,9 +193,8 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
       const response: IAuthResponse = {
         success: true,
         message: "Account verified successfully",
-      token,
-      // Keep flat fields for old clients, add `data` for new response shape.
-      data: { token },
+        token,
+        data: { token },
         user: {
           id: user.id,
           name: user.name,
@@ -145,6 +204,7 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
         },
       };
 
+      console.log(`[DEBUG] Verify OTP SUCCESS: email=${email}, userId=${user.id}`);
       res.status(200).json(response);
     } else if (purpose === "RESET_PASSWORD") {
       const resetToken = generateToken(user.id, "15m");
@@ -203,6 +263,8 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
 
     const otp = generateOTP();
     const otpExpiry = getOTPExpiry();
+
+    console.log(`[DEBUG] Resend OTP: email=${email}, newOtp=${otp}, purpose=${purpose}`);
 
     user.otp = otp;
     user.otpExpiry = otpExpiry;
@@ -263,10 +325,29 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     if (!user.isVerified) {
+      // Automatically send a new OTP if user tries to login but is not verified
+      // Prevent rapid OTP generation: reuse OTP if generated < 5 mins ago
+      const canReuseOTP = user.otp && 
+                         user.updatedAt && 
+                         (Date.now() - new Date(user.updatedAt).getTime() < 300000);
+
+      const otp = canReuseOTP ? user.otp! : generateOTP();
+      const otpExpiry = getOTPExpiry();
+
+      console.log(`[DEBUG] Login (Unverified): email=${email}, newOtp=${otp}, reused=${canReuseOTP}`);
+
+      user.otp = otp;
+      user.otpExpiry = otpExpiry;
+      user.otpPurpose = "REGISTER";
+      await user.save();
+
+      await emailService.sendRegistrationOTP(user.email, otp, user.name);
+
       res.status(401).json({
         success: false,
-        message:
-          "Please verify your account first. Check your email for OTP code.",
+        message: canReuseOTP
+          ? "Tài khoản chưa được xác thực. Vui lòng sử dụng mã OTP đã được gửi đến email của bạn."
+          : "Tài khoản chưa được xác thực. Một mã OTP mới đã được gửi đến email của bạn.",
         code: "ACCOUNT_NOT_VERIFIED",
         email: user.email,
       });
