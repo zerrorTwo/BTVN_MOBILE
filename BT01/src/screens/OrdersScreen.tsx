@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator } from "react-native-paper";
 import { useSelector } from "react-redux";
 import tw from "twrnc";
@@ -65,13 +66,25 @@ export const OrdersScreen = ({ navigation }: any) => {
         }
     }, [data, page]);
 
+    useFocusEffect(
+        useCallback(() => {
+            if (!user) return;
+            setPage(1);
+            refetch();
+        }, [refetch, user]),
+    );
+
     const onRefresh = useCallback(async () => {
         if (!user) return;
         setRefreshing(true);
-        setPage(1);
-        setAllOrders([]);
-        await refetch();
-        setRefreshing(false);
+        try {
+            // Do not clear local list before new response arrives.
+            // Otherwise UI may flash "empty" on slow network.
+            setPage(1);
+            await refetch();
+        } finally {
+            setRefreshing(false);
+        }
     }, [refetch, user]);
 
     const handleLoadMore = () => {

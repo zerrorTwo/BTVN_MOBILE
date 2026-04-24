@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
     View,
     Text,
     ScrollView,
     Image,
     TextInput,
+    RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { Button, Portal, Modal } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { MotiView } from "moti";
@@ -31,7 +33,11 @@ import { colors, PAYMENT_METHOD_META, PAYMENT_STATUS_META } from "../theme";
 export const OrderDetailScreen = ({ route, navigation }: any) => {
     const insets = useSafeAreaInsets();
     const { orderId } = route.params;
-    const { data, isLoading, refetch } = useGetOrderByIdQuery(orderId);
+    const { data, isLoading, refetch } = useGetOrderByIdQuery(orderId, {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+    });
+    const [refreshing, setRefreshing] = useState(false);
     const [cancelOrder, { isLoading: isCanceling }] = useCancelOrderMutation();
     const [initMomoPayment, { isLoading: isRetryingPayment }] =
         useInitMomoPaymentMutation();
@@ -40,6 +46,21 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
     const [cancelModalVisible, setCancelModalVisible] = useState(false);
 
     const order = data?.data;
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await refetch();
+        } finally {
+            setRefreshing(false);
+        }
+    }, [refetch]);
+
+    useFocusEffect(
+        useCallback(() => {
+            refetch();
+        }, [refetch]),
+    );
 
     const handleRetryMomo = async () => {
         try {
@@ -147,7 +168,17 @@ export const OrderDetailScreen = ({ route, navigation }: any) => {
             style={[tw`flex-1`, { backgroundColor: colors.background.default }]}
             edges={["bottom"]}
         >
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={colors.primary.main}
+                        colors={[colors.primary.main]}
+                    />
+                }
+            >
                 {/* Timeline */}
                 <View style={tw`p-4`}>
                     <OrderTimeline
